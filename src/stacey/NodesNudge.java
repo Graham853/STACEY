@@ -58,6 +58,11 @@ public class NodesNudge extends Operator {
                     "All gene trees",
                     new ArrayList<Tree>());
 
+    @SuppressWarnings({"CanBeFinal", "WeakerAccess"})
+    public Input<Long> delayInput =
+            new Input<>("delay",
+                    "Number of times the operator is disabled.");
+
     public enum GtreeNodeCriterion {
         MIXED_WITH_PURE_CHILDREN,
         MIXED_WITH_A_PURE_CHILD,
@@ -67,8 +72,11 @@ public class NodesNudge extends Operator {
 
 
 
-    private TreeInterface sTree;
+    private Tree sTree;
     private List<Tree> gTrees;
+    private long delay = 0;
+    private int callCount = 0;
+    private boolean sTreeTooSmall;
 
     private UnionArrays unionArrays;
 
@@ -125,30 +133,6 @@ public class NodesNudge extends Operator {
 
     /********************************************************************************************/
 
-    @Override
-    public double proposal() {
-
-        if (smcTreeInput.get().getLeafNodeCount() < 3) {
-            return Double.NEGATIVE_INFINITY;
-        }
-
-        if (debugFlag  &&  numberofdebugchecks < maxnumberofdebugchecks) {
-            Checks.allTreesAndCompatibility(sTree, gTrees, "NodesNudge", "before move");
-            numberofdebugchecks++;
-        }
-
-        unionArrays.update();
-        double logHR = doNodesNudgeMove();
-        unionArrays.reset();
-
-        if (debugFlag  &&  numberofdebugchecks < maxnumberofdebugchecks) {
-            Checks.allTreesAndCompatibility(sTree, gTrees, "NodesNudge", "after move");
-            numberofdebugchecks++;
-        }
-        return logHR;
-    }
-
-
 
     @Override
     public void initAndValidate() throws Exception {
@@ -156,6 +140,10 @@ public class NodesNudge extends Operator {
 
         sTree = smcTreeInput.get();
         gTrees = geneTreesInput.get();
+        sTreeTooSmall = (sTree.getLeafNodeCount() < 3);
+        if (delayInput.get() != null) {
+            delay = delayInput.get().longValue();
+        }
         Bindings bindings = Bindings.initialise(sTree, gTrees);
         unionArrays = UnionArrays.initialise(sTree, gTrees, bindings);
 
@@ -165,6 +153,38 @@ public class NodesNudge extends Operator {
         upTotals = new double[GtreeNodeCriterion.values().length];
         downTotals = new double[GtreeNodeCriterion.values().length];
     }
+
+
+
+    @Override
+    public double proposal() {
+
+        // TODO Input says use get(this). See TODO in CoordinatedPruneRegraft
+
+        if (sTreeTooSmall) {
+            return Double.NEGATIVE_INFINITY;
+        }
+        callCount++;
+        if (callCount < delay) {
+            return Double.NEGATIVE_INFINITY;
+        }
+
+        if (debugFlag  &&  numberofdebugchecks < maxnumberofdebugchecks) {
+            Checks.allTreesAndCompatibility(sTree, gTrees, "NodesNudge", "before move");
+            numberofdebugchecks++;
+        }
+
+        unionArrays.update();
+        double logHR = doNodesNudgeMove();     //  The business
+        unionArrays.reset();
+
+        if (debugFlag  &&  numberofdebugchecks < maxnumberofdebugchecks) {
+            Checks.allTreesAndCompatibility(sTree, gTrees, "NodesNudge", "after move");
+            numberofdebugchecks++;
+        }
+        return logHR;
+    }
+
 
 
     @Override
@@ -213,9 +233,10 @@ public class NodesNudge extends Operator {
 
     private double doNodesNudgeMove() {
 
+        sTree.startEditing(this);
         // TODO This is a fix for beast.core.State$Trie memory
         for (int j = 0; j < gTrees.size(); j++) {
-            gTrees.get(j).startEditing(null);
+            gTrees.get(j).startEditing(this);
         }
         // what type of move
         assert GtreeNodeCriterion.values().length == gtreeNodeCriterionWeights.length;

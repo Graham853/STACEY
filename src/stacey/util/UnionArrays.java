@@ -73,6 +73,7 @@ public class UnionArrays {
 
 
     public ArrayList<Node> getStraddlers(int j, BitUnion x, BitUnion y) {
+        assert !x.overlaps(y);
         ArrayList<Node> s = new ArrayList<>();
         subtreeStraddlers(s, j, x, y, gTrees.get(j).getRoot());
         return s;
@@ -145,6 +146,8 @@ public class UnionArrays {
     private void subtreeStraddlers(ArrayList<Node> s, int j, BitUnion x, BitUnion y, Node node) {
         Node lftN = node.getChild(0);
         Node rgtN = node.getChild(1);
+        assert lftN != null; // only recurse to nodes containing something from
+        assert rgtN != null; // x and something from y, so at least two SMCs.
         boolean lftx = gUnions[j][lftN.getNr()].overlaps(x);
         boolean lfty = gUnions[j][lftN.getNr()].overlaps(y);
         boolean rgtx = gUnions[j][rgtN.getNr()].overlaps(x);

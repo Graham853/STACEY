@@ -446,7 +446,6 @@ public class PIOMSCoalescentDistribution extends TreeDistribution {
                             }
                         }
                     }
-
                     Node anc = sTree.getNode(n).getParent();
                     double ancHeight = (anc == null) ? maxgtreehgt : anc.getHeight();
                     int nCoals = njHeights.size();
@@ -460,7 +459,6 @@ public class PIOMSCoalescentDistribution extends TreeDistribution {
                             }
                         }
                     }
-
                     double [] heights = new double[nCoals+2];
                     heights[0] = nodeHeight;
                     heights[nCoals+1] = ancHeight;
@@ -475,9 +473,9 @@ public class PIOMSCoalescentDistribution extends TreeDistribution {
                         coalIntensity += (heights[i+1] - heights[i]) * (nLins[n] - i) * (nLins[n] - i - 1) * 0.5;
                     }
                     coalIntensity /= coalFactor;
-
+                    coalIntensities[n][j] = coalIntensity;
                     // old calc
-/*                    if (nCoals == 0) {
+                    /*if (nCoals == 0) {
                         coalIntensities[n][j] = (ancHeight - nodeHeight) * nLins[n] * (nLins[n] - 1) * 0.5 / coalFactor;
                     } else if (nCoals == 1) {
                         double gammanj = (njHeights.get(0) - nodeHeight) * nLins[n] * (nLins[n] - 1) * 0.5;
@@ -496,9 +494,7 @@ public class PIOMSCoalescentDistribution extends TreeDistribution {
                     if (coalIntensities[n][j] != coalIntensity) {
                         System.out.println("BUG in logLhoodAllGeneTreesInSMCTree() check coalIntensity failed");
                     }
-                    assert coalIntensities[n][j] == coalIntensity;*/
-                    coalIntensities[n][j] = coalIntensity;
-                }
+                    assert coalIntensities[n][j] == coalIntensity;*/                }
                 gTreeCountIntensityIsDirty[j] = false;
             }
         }

@@ -48,8 +48,16 @@ public class FocusedNodeHeightScaler extends Operator {
                     "All gene trees",
                     new ArrayList<Tree>());
 
-    private TreeInterface sTree;
+    @SuppressWarnings({"CanBeFinal", "WeakerAccess"})
+    public Input<Long> delayInput =
+            new Input<>("delay",
+                    "Number of times the operator is disabled.");
+
+    private Tree sTree;
     private List<Tree> gTrees;
+    private long delay = 0;
+    private int callCount = 0;
+    private boolean sTreeTooSmall;
 
     private UnionArrays unionArrays;
 
@@ -119,33 +127,6 @@ public class FocusedNodeHeightScaler extends Operator {
     /*******************************************************************************/
 
 
-
-
-    @Override
-    public double proposal() {
-        if (smcTreeInput.get().getLeafNodeCount() < 5) {
-            return Double.NEGATIVE_INFINITY;
-        }
-
-        if (debugFlag  &&  numberofdebugchecks < maxnumberofdebugchecks) {
-            Checks.allTreesAndCompatibility(sTree, gTrees, "FocusedNodeHeightScaler", "before move");
-            numberofdebugchecks++;
-        }
-
-        unionArrays.update();
-        double logHR = doFocusedScalerMove(); // the business
-        unionArrays.reset();
-
-        if (debugFlag  &&  numberofdebugchecks < maxnumberofdebugchecks) {
-            Checks.allTreesAndCompatibility(sTree, gTrees, "FocusedNodeHeightScaler", "after move");
-            numberofdebugchecks++;
-        }
-
-        return logHR;
-    }
-
-
-
     @Override
     public void initAndValidate() throws Exception {
         /*if (smcTreeInput.get().getLeafNodeCount() < 5) {
@@ -154,6 +135,10 @@ public class FocusedNodeHeightScaler extends Operator {
 
         sTree = smcTreeInput.get();
         gTrees = geneTreesInput.get();
+        sTreeTooSmall = (sTree.getLeafNodeCount() < 5);
+        if (delayInput.get() != null) {
+            delay = delayInput.get().longValue();
+        }
         Bindings bindings = Bindings.initialise(sTree, gTrees);
 
         unionArrays = UnionArrays.initialise(sTree, gTrees, bindings);
@@ -171,19 +156,47 @@ public class FocusedNodeHeightScaler extends Operator {
             gTreeDistances[j] = new int[gTree.getNodeCount()];
             gTreeWeights[j] = new double[gTree.getNodeCount()];
         }
-
     }
 
 
 
+    @Override
+    public double proposal() {
+        // TODO Input says use get(this). See TODO in CoordinatedPruneRegraft
+        if (sTreeTooSmall) {
+            return Double.NEGATIVE_INFINITY;
+        }
+        callCount++;
+        if (callCount < delay) {
+            return Double.NEGATIVE_INFINITY;
+        }
+
+
+        if (debugFlag  &&  numberofdebugchecks < maxnumberofdebugchecks) {
+            Checks.allTreesAndCompatibility(sTree, gTrees, "FocusedNodeHeightScaler", "before move");
+            numberofdebugchecks++;
+        }
+
+        unionArrays.update();
+        double logHR = doFocusedScalerMove();   // The business
+        unionArrays.reset();
+
+        if (debugFlag  &&  numberofdebugchecks < maxnumberofdebugchecks) {
+            Checks.allTreesAndCompatibility(sTree, gTrees, "FocusedNodeHeightScaler", "after move");
+            numberofdebugchecks++;
+        }
+        return logHR;
+    }
+
     /****************************************************************************************/
 
 
-    double doFocusedScalerMove() {
+    private double doFocusedScalerMove() {
 
+        sTree.startEditing(this);
         // TODO This is a fix for beast.core.State$Trie memory
-        for (int j = 0; j < geneTreesInput.get().size(); j++) {
-            geneTreesInput.get().get(j).startEditing(null);
+        for (int j = 0; j < gTrees.size(); j++) {
+            gTrees.get(j).startEditing(this);
         }
 
         // Stage 1 - choose focal node and fill in info.

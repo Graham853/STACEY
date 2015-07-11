@@ -44,18 +44,22 @@ public class StaceyNodeReheight extends Operator {
             new Input<Tree>("smcTree",
                     "The species tree or minimal clusters tree", Input.Validate.REQUIRED);
 
-    public final Input<TaxonSet> taxonSetInput = new Input<TaxonSet>("taxonset", "taxon set describing species tree taxa and their gene trees", Input.Validate.REQUIRED);
-
-
     @SuppressWarnings({"CanBeFinal", "WeakerAccess"})
     public Input<List<Tree>> geneTreesInput =
             new Input<List<Tree>>("geneTree",
                     "All gene trees",
                     new ArrayList<Tree>());
 
+    @SuppressWarnings({"CanBeFinal", "WeakerAccess"})
+    public Input<Long> delayInput =
+            new Input<>("delay",
+                    "Number of times the operator is disabled.");
+
     private Tree sTree;
     private List<Tree> gTrees;
-
+    private long delay = 0;
+    private int callCount = 0;
+    private boolean sTreeTooSmall;
     private UnionArrays unionArrays;
 
     private final boolean debugFlag = Boolean.valueOf(System.getProperty("stacey.debug"));
@@ -65,9 +69,29 @@ public class StaceyNodeReheight extends Operator {
 
 
     @Override
+    public void initAndValidate() throws Exception {
+        sTree = smcTreeInput.get();
+        gTrees = geneTreesInput.get();
+        sTreeTooSmall = (sTree.getLeafNodeCount() < 3);
+        if (delayInput.get() != null) {
+            delay = delayInput.get().longValue();
+        }
+        Bindings bindings = Bindings.initialise(sTree, gTrees);
+        unionArrays = UnionArrays.initialise(sTree, gTrees, bindings);
+    }
+
+
+
+    @Override
     public double proposal() {
 
-        if (smcTreeInput.get().getLeafNodeCount() < 3) {
+        // TODO Input says use get(this). See TODO in CoordinatedPruneRegraft
+
+        if (sTreeTooSmall) {
+            return Double.NEGATIVE_INFINITY;
+        }
+        callCount++;
+        if (callCount < delay) {
             return Double.NEGATIVE_INFINITY;
         }
 
@@ -77,7 +101,7 @@ public class StaceyNodeReheight extends Operator {
         }
 
         unionArrays.update();
-        double logHR = doNodeReheightMove();
+        double logHR = doNodeReheightMove();        //  The business
         unionArrays.reset();
 
         if (debugFlag  &&  numberofdebugchecks < maxnumberofdebugchecks) {
@@ -89,15 +113,8 @@ public class StaceyNodeReheight extends Operator {
 
 
 
-    @Override
-    public void initAndValidate() throws Exception {
-        sTree = smcTreeInput.get();
-        gTrees = geneTreesInput.get();
-        Bindings bindings = Bindings.initialise(sTree, gTrees);
-        unionArrays = UnionArrays.initialise(sTree, gTrees, bindings);
-    }
 
-
+/***********************************************************************************/
 
 
     private double doNodeReheightMove() {

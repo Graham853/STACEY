@@ -56,10 +56,10 @@ private final int size;
     }
 
 
-    // Inserts element indexed by b into a union. No effect if b is already in the union.
-    public void insert(int b) {
-        assert 0 <= b  &&  b < size;
-        bits[b / 64] |= (1L << (b % 64));
+    // Inserts element indexed by i into a union. No effect if i is already in the union.
+    public void insert(int i) {
+        assert 0 <= i  &&  i < size;
+        bits[i / 64] |= (1L << (i % 64));
     }
 
     // Returns true if this is contained in x, false if something in this is not in x

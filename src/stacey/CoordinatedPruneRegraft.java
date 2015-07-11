@@ -56,9 +56,17 @@ public class CoordinatedPruneRegraft extends Operator {
                     "All gene trees",
                     new ArrayList<Tree>());
 
+    @SuppressWarnings({"CanBeFinal", "WeakerAccess"})
+    public Input<Long> delayInput =
+            new Input<>("delay",
+                    "Number of times the operator is disabled.");
 
-    private TreeInterface sTree;
+
+    private Tree sTree;
     private List<Tree> gTrees;
+    private long delay = 0;
+    private int callCount = 0;
+    private boolean sTreeTooSmall;
     private Bindings bindings;
     private UnionArrays unionArrays;
 
@@ -123,6 +131,10 @@ public class CoordinatedPruneRegraft extends Operator {
         } TODO: this upsets Beauti */
         sTree = smcTreeInput.get();
         gTrees = geneTreesInput.get();
+        sTreeTooSmall = (sTree.getLeafNodeCount() < 3);
+        if (delayInput.get() != null) {
+            delay = delayInput.get().longValue();
+        }
         bindings = Bindings.initialise(sTree, gTrees);
         unionArrays = UnionArrays.initialise(sTree, gTrees, bindings);
         if (debugFlag) {
@@ -136,20 +148,54 @@ public class CoordinatedPruneRegraft extends Operator {
     @Override
     public double proposal() {
 
-        if (smcTreeInput.get().getLeafNodeCount() < 3) {
+        // TODO Input has these instructions, but NodeReheight does not follow them.
+        // They cannot be obeyed for Lists, so far as I can see. Lists are not StateNodes,
+        // and their elements are not Inputs.
+        // Most operators use get(this).
+        // what to do in initAndValidate? can I store sTree, gTree there??
+        // I think it is all to do with telling BEAST the state node is being edited.
+        // I am probably now doing this twice, and in three ways:
+        // sTree = smcTreeInput.get(this); marks sTree edited,
+        // gTree.startEditing() does gTrees explicitly.
+        // Then node.removeChild(), etc, do it again
+        // ... and if debugging another couple of times...
+
+        /**                for Input.get()
+         * Get the value of this input -- not to be called from operators!!!
+         * If this is a StateNode input, instead of returning
+         * the actual value, the current value of the StateNode
+         * is returned. This is defined as the current StateNode
+         * in the State, or itself if it is not part of the state.
+                         for Input.get(operator)
+         * As get() but with this difference that the State can manage
+         * whether to make a copy and register the operator.
+         * <p/>
+         * Only Operators should call this method.
+         * Also Operators should never call Input.get(), always Input.get(operator).
+         */
+
+        if (sTreeTooSmall) {
+            return Double.NEGATIVE_INFINITY;
+        }
+        callCount++;
+        if (callCount < delay) {
             return Double.NEGATIVE_INFINITY;
         }
 
         if (debugFlag  &&  numberofdebugchecks < maxnumberofdebugchecks) {
+            sTree = smcTreeInput.get(this);
+            gTrees = geneTreesInput.get(this);
             Checks.allTreesAndCompatibility(sTree, gTrees, "CoordinatedPruneRegraft", "before move");
             numberofdebugchecks++;
         }
 
         unionArrays.update();
-        double logHR = doCoordinatedPruneRegraft(false);// TODO: choose NNI and not-NNI at random(?)
+        double logHR = doCoordinatedPruneRegraft(false);   //  The business
         unionArrays.reset();
 
         if (debugFlag  &&  numberofdebugchecks < maxnumberofdebugchecks) {
+            sTree = smcTreeInput.get(this);
+            gTrees = geneTreesInput.get(this);
             Checks.allTreesAndCompatibility(sTree, gTrees, "CoordinatedPruneRegraft", "after move");
             numberofdebugchecks++;
         }
@@ -200,11 +246,13 @@ public class CoordinatedPruneRegraft extends Operator {
     // the move (smi) to pass to gene trees, do the smc tree move, do the gene tree
     // moves, get information about the reverse move (revsmi), calculate the
     // HR for reverse move.
+    // TODO: choose NNI and not-NNI at random(?)
     private double doCoordinatedPruneRegraft(boolean NNI) {
 
+        sTree.startEditing(this);
         // TODO This is a fix for beast.core.State$Trie memory
         for (int j = 0; j < gTrees.size(); j++) {
-            gTrees.get(j).startEditing(null);
+            gTrees.get(j).startEditing(this);
         }
 
         int d = -1;
