@@ -117,8 +117,14 @@ public class FitsHeights {
         }
         while (lftS != rgtS) {
             if (lftS.getHeight() < rgtS.getHeight()) {
+                if (lftS.getParent() == null) {
+                    System.out.println("BUG in makeHeightsSubtree (lftS)");
+                }
                 lftS = lftS.getParent();
             } else {
+                if (rgtS.getParent() == null) {
+                    System.out.println("BUG in makeHeightsSubtree (rgtS)");
+                }
                 rgtS = rgtS.getParent();
             }
         }

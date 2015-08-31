@@ -24,6 +24,7 @@ import beast.evolution.alignment.TaxonSet;
 import beast.evolution.tree.Node;
 import beast.evolution.tree.Tree;
 import beast.evolution.tree.TreeInterface;
+import beast.util.Randomizer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -91,12 +92,6 @@ public class Bindings {
 
 
     public int nLineagesForBeastTipNrAndGtree(int beastNodeNr, int j) {
-        if (beastNodeNr >= nLinsForSmcTipNr.length) {
-            System.out.println("DEBUGGING\n");
-        }
-        if (j >= nLinsForSmcTipNr[beastNodeNr].length) {
-            System.out.println("DEBUGGING\n");
-        }
         return nLinsForSmcTipNr[beastNodeNr][j];
     }
 

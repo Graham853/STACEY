@@ -183,8 +183,8 @@ public class CoordinatedPruneRegraft extends Operator {
         }
 
         if (debugFlag  &&  numberofdebugchecks < maxnumberofdebugchecks) {
-            sTree = smcTreeInput.get(this);
-            gTrees = geneTreesInput.get(this);
+            sTree = smcTreeInput.get();
+            gTrees = geneTreesInput.get();
             Checks.allTreesAndCompatibility(sTree, gTrees, "CoordinatedPruneRegraft", "before move");
             numberofdebugchecks++;
         }
@@ -194,8 +194,8 @@ public class CoordinatedPruneRegraft extends Operator {
         unionArrays.reset();
 
         if (debugFlag  &&  numberofdebugchecks < maxnumberofdebugchecks) {
-            sTree = smcTreeInput.get(this);
-            gTrees = geneTreesInput.get(this);
+            sTree = smcTreeInput.get();
+            gTrees = geneTreesInput.get();
             Checks.allTreesAndCompatibility(sTree, gTrees, "CoordinatedPruneRegraft", "after move");
             numberofdebugchecks++;
         }

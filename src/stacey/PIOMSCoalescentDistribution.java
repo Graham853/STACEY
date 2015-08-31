@@ -262,14 +262,9 @@ public class PIOMSCoalescentDistribution extends TreeDistribution {
                     popPriorScale.get().getValue(), true);
             if (Math.abs(fastLogP - robustLogP) > 1e-12) {
                 System.out.println("BUG in calculateLogP() in PIOMSCoalescentDistribution");
-                assert false;
+                System.exit(1);
             }
             numberofdebugchecks++;
-        }
-
-        if (debugFlag && numberofdebugchecks < 3) {
-            System.out.println("debugging: coal logP " + fastLogP);
-            System.out.println(Misc.allTreesAsText(sTree, gTrees.subList(0,2)));
         }
         logP = fastLogP;
         return logP;

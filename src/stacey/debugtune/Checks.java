@@ -37,18 +37,37 @@ public class Checks {
                                                 String opName, String when) {
         if (!Checks.treeIsOK(sTree)) {
             System.out.println("BUG found in " + opName + ". Bad sTree " + when);
+            System.out.println(Misc.allTreesAsText(sTree, gTrees));
             System.exit(1);
         }
         for (TreeInterface gTree : gTrees) {
             if (!Checks.treeIsOK(gTree)) {
                 System.out.println("BUG found in " + opName + ". Bad gTree " + when);
+                System.out.println(Misc.allTreesAsText(sTree, gTrees));
                 System.exit(1);
             }
         }
         if (!Checks.compatible(sTree, gTrees)) {
             System.out.println("BUG found in " + opName + ". Incompatible trees " + when);
+            System.out.println(Misc.allTreesAsText(sTree, gTrees));
             System.exit(1);
         }
+    }
+
+
+    public static boolean allTreesAreOKAndCompatible(TreeInterface sTree, List<Tree> gTrees) {
+        if (!Checks.treeIsOK(sTree)) {
+            return false;
+        }
+        for (TreeInterface gTree : gTrees) {
+            if (!Checks.treeIsOK(gTree)) {
+                return false;
+            }
+        }
+        if (!Checks.compatible(sTree, gTrees)) {
+            return false;
+        }
+        return true;
     }
 
 
@@ -56,6 +75,9 @@ public class Checks {
     public static boolean treeIsOK(TreeInterface tree) {
         Node nodes [] = tree.getNodesAsArray();
         for (int n = 0; n <nodes.length; n++) {
+            if (!Double.isFinite(nodes[n].getHeight())) {
+                return false;
+            }
             if (nodes[n].getHeight() < 0) {
                 return false;
             }

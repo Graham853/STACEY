@@ -24,7 +24,7 @@ package stacey;
 import beast.core.Description;
 import beast.core.Input;
 import beast.core.Operator;
-import beast.evolution.alignment.TaxonSet;
+import beast.core.parameter.RealParameter;
 import beast.evolution.tree.Node;
 import beast.evolution.tree.Tree;
 import beast.util.Randomizer;
@@ -50,10 +50,21 @@ public class StaceyNodeReheight extends Operator {
                     "All gene trees",
                     new ArrayList<Tree>());
 
+    public Input<RealParameter> popSFInput =
+            new Input<>("popSF",
+                    "The population scaling factor for the STACEY coalescent", Input.Validate.REQUIRED);
+
+    public Input<Double> propUniformInput =
+            new Input<>("proportionUniform",
+                    "The fraction of times which the operator uses a uniform density for sampling new heights. " +
+                            "It must be between 0.0 and 1.0. " +
+                            "The rest of the time the operator uses a density skewed towards the maximum compatible height.", Input.Validate.REQUIRED);
+
     @SuppressWarnings({"CanBeFinal", "WeakerAccess"})
     public Input<Long> delayInput =
             new Input<>("delay",
                     "Number of times the operator is disabled.");
+
 
     private Tree sTree;
     private List<Tree> gTrees;
@@ -61,6 +72,11 @@ public class StaceyNodeReheight extends Operator {
     private int callCount = 0;
     private boolean sTreeTooSmall;
     private UnionArrays unionArrays;
+
+
+    /* experiment with non-uniform sampling of new heights*/
+    private double propUniform;
+
 
     private final boolean debugFlag = Boolean.valueOf(System.getProperty("stacey.debug"));
     private int numberofdebugchecks = 0;
@@ -75,6 +91,10 @@ public class StaceyNodeReheight extends Operator {
         sTreeTooSmall = (sTree.getLeafNodeCount() < 3);
         if (delayInput.get() != null) {
             delay = delayInput.get().longValue();
+        }
+        propUniform = 0.0;
+        if (propUniformInput.get() != null) {
+            propUniform = propUniformInput.get().doubleValue();
         }
         Bindings bindings = Bindings.initialise(sTree, gTrees);
         unionArrays = UnionArrays.initialise(sTree, gTrees, bindings);
@@ -117,6 +137,9 @@ public class StaceyNodeReheight extends Operator {
 /***********************************************************************************/
 
 
+
+
+
     private double doNodeReheightMove() {
         Node [] sNodes = sTree.getNodesAsArray();
         // randomly change left/right order
@@ -131,20 +154,76 @@ public class StaceyNodeReheight extends Operator {
         while (sTree.getNodesAsArray()[iReverseOrder[iNode]].isLeaf()) {
             iNode = Randomizer.nextInt(fHeights.length);
         }
-        final double fMaxHeight = calcMaxHeight(iReverseOrder, iNode);
-        fHeights[iNode] = Randomizer.nextDouble() * fMaxHeight;
+        final double maxHeight = calcMaxHeight(iReverseOrder, iNode);
+
+        double newHeight;
+        double logHR;
+        if (Randomizer.nextDouble() > propUniform) {
+            /* experiment with non-uniform sampling of new heights.
+            NodeReheight is rarely accepted when there are large number of loci, with a fixed species delimitation
+            I think that's because after burnin, only small changes in heights will work.
+            So seems like it would better for new heights to be concentrated near the max.
+            This requires HRs to counter the bias of course, but should still help.
+            */
+            /*
+            The cdf we're going to sample from is defined in [0,h] as
+            F(x) = (log(h+a) - log(h+a-x)) / (log(h+a)-log(a))
+            where h is maxHeight and a is hgtS = popSF / gTrees.size();
+            The inverse is
+            x = G(y) = h + a - exp(  log(h+a) (1-y)  +  log(a) y  )
+            The pdf is
+            f(x) = 1 / ( (log(h+a)-log(a)) (h+a-x) )
+            The median is G(.5) = h+a - sqrt(a(h+a))
+            Eg h = 0.001, a = 0.00001, G(.5) =  0.00101-sqrt(.00001*.00101) = 0.0009095
+            Eg h = 0.001, a = 0.0000001, G(.5) =  0.0010001-sqrt(.0000001*.0010001) = 0.0009900995
+            For large h/a, median ~= h(1 - 1/sqrt(h/a))
+             */
+            double popSF = popSFInput.get().getValue();
+            double hgtS = 0.1 * popSF / gTrees.size();
+            double oldHeight = fHeights[iNode];
+            newHeight = newHeightSample(maxHeight, hgtS);
+            double oldDensity = newHeightPDF(oldHeight, maxHeight, hgtS);
+            double newDensity = newHeightPDF(newHeight, maxHeight, hgtS);
+            logHR = Math.log(oldDensity/newDensity);
+        } else {
+            newHeight = Randomizer.nextDouble() * maxHeight;
+            logHR = 0.0;
+        }
+        fHeights[iNode] = newHeight;
         sNodes[iReverseOrder[iNode]].setHeight(fHeights[iNode]);
         // reconstruct tree from heights
         final Node root = reconstructTree(fHeights, iReverseOrder, 0,
-                      fHeights.length, new boolean[fHeights.length]);
+                fHeights.length, new boolean[fHeights.length]);
         assert checkConsistency(root, new boolean[fHeights.length]) ;
         root.setParent(null);
         sTree.setRoot(root);
-        return 0.0;
+        return logHR;
     }
 
 
 
+
+
+    private double newHeightPDF(double x, double h, double a) {
+        double d = 1.0 / (Math.log(h + a) - Math.log(a));
+        d /= (h + a - x);
+        return d;
+    }
+
+    // not used but maybe for debugging
+    private double newHeightCDF(double x, double h, double a) {
+        double p = 1.0 / (Math.log(h + a) - Math.log(a));
+        p *= (Math.log(h + a) - Math.log(h + a - x));
+        return p;
+    }
+
+    private double newHeightSample(double h, double a) {
+        double y = Randomizer.nextDouble();
+        double q = h + a - Math.exp(Math.log(h + a) * (1 - y) + Math.log(a) * y);
+        q = Math.max(q, 0.0);
+        q = Math.min(q, h);
+        return q;
+    }
 
 
     private boolean checkConsistency(final Node node, final boolean[] bUsed) {
