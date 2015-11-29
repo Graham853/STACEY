@@ -1,0 +1,609 @@
+<beast version='2.0'
+       namespace='beast.app.beauti:beast.core:beast.evolution.branchratemodel:beast.evolution.speciation:beast.evolution.tree.coalescent:beast.core.util:beast.evolution.nuc:beast.evolution.operators:beast.evolution.sitemodel:beast.evolution.substitutionmodel:beast.evolution.likelihood:beast.evolution:beast.math.distributions'
+	templateinfo='STACEY species delimitation and phylogeny estimation&lt;br>(calibrations and tip-dates are not supported)'>
+
+
+    <!-- GRJ This is the StarBEAST template with changes marked GRJ -->
+
+
+
+<map name='connect' reserved='true'>beast.app.beauti.BeautiConnector</map>
+<map name='subtemplate' reserved='true'>beast.app.beauti.BeautiSubTemplate</map>
+<map name='Uniform'>beast.math.distributions.Uniform</map>
+<map name='Normal'>beast.math.distributions.Normal</map>
+<map name='OneOnX'>beast.math.distributions.OneOnX</map>
+<map name='LogNormal'>beast.math.distributions.LogNormalDistributionModel</map>
+<map name='Exponential'>beast.math.distributions.Exponential</map>
+<map name='Gamma'>beast.math.distributions.Gamma</map>
+<map name='Beta'>beast.math.distributions.Beta</map>
+<map name='LaplaceDistribution'>beast.math.distributions.LaplaceDistribution</map>
+<map name='InverseGamma'>beast.math.distributions.InverseGamma</map>
+<map name='prior'>beast.math.distributions.Prior</map>
+
+
+    <!-- GRJ removed beast.evolution.speciation.GeneTreeForSpeciesTreeDistribution.speciesTree and 4 others
+added all stacey.*
+-->
+    <beauticonfig spec='BeautiConfig'
+        inputLabelMap='beast.core.MCMC.operator=Operators,
+	        beast.core.MCMC.logger=Loggers,
+			beast.evolution.sitemodel.SiteModel.mutationRate =Substitution Rate'
+        inlinePlugins ='beast.core.MCMC.distribution,
+            beast.evolution.sitemodel.SiteModel.substModel,
+            beast.evolution.tree.coalescent.ExponentialGrowth,
+            beast.evolution.tree.coalescent.ConstantPopulation,
+            beast.evolution.tree.coalescent.Coalescent,
+            beast.core.State.stateNode'
+        collapsedPlugins ='beast.core.MCMC.logger'
+        suppressPlugins = 'beast.core.MCMC.operator,
+		beast.core.MCMC.operatorschedule,
+	        beast.evolution.tree.coalescent.Coalescent.treeIntervals,
+	        beast.evolution.tree.coalescent.Coalescent.tree,
+	        beast.core.MCMC.state,
+	        beast.core.MCMC.distribution,
+	        beast.core.MCMC.init,
+	        beast.evolution.speciation.BirthDeathGernhard08Model.relativeDeathRate,
+	        beast.evolution.speciation.BirthDeathGernhard08Model.treeIntervals,
+	        beast.evolution.speciation.BirthDeathGernhard08Model.type,
+	        beast.evolution.speciation.BirthDeathGernhard08Model.sampleProbability,
+	        beast.evolution.speciation.BirthDeathGernhard08Model.tree,
+	        beast.evolution.tree.Tree,
+	        beast.evolution.tree.Tree.trait,
+	        beast.evolution.tree.Tree.taxa,
+	        beast.evolution.tree.Tree.taxonset,
+	        beast.evolution.tree.RandomTree.trait,
+	        beast.evolution.tree.RandomTree.initial,
+	        beast.evolution.tree.RandomTree.taxa,
+	        beast.evolution.tree.RandomTree.taxonset,
+	        beast.evolution.tree.RandomTree.estimate,
+	        beast.util.TreeParser.initial,
+	        beast.util.TreeParser.taxa,
+	        beast.util.TreeParser.taxonset,
+	        beast.util.TreeParser.trait,
+	        beast.util.TreeParser.estimate,
+	        beast.util.ClusterTree.initial,
+	        beast.util.ClusterTree.taxa,
+	        beast.util.ClusterTree.taxonset,
+	        beast.util.ClusterTree.trait,
+	        beast.util.ClusterTree.estimate,
+	        beast.evolution.substitutionmodel.WAG.rates,
+	        beast.evolution.substitutionmodel.WAG.frequencies,
+	        beast.evolution.substitutionmodel.JTT.rates,
+	        beast.evolution.substitutionmodel.JTT.frequencies,
+	        beast.evolution.substitutionmodel.Blosum62.rates,
+	        beast.evolution.substitutionmodel.Blosum62.frequencies,
+	        beast.evolution.substitutionmodel.Dayhoff.rates,
+	        beast.evolution.substitutionmodel.Dayhoff.frequencies,
+	        beast.evolution.substitutionmodel.CPREV.rates,
+	        beast.evolution.substitutionmodel.CPREV.frequencies,
+	        beast.evolution.substitutionmodel.MTREV.rates,
+	        beast.evolution.substitutionmodel.MTREV.frequencies,
+	        beast.evolution.substitutionmodel.GTR.rates,
+	        beast.evolution.substitutionmodel.JukesCantor.frequencies,
+            beast.math.distributions.Prior.x,
+            beast.math.distributions.MRCAPrior.tree,
+            beast.math.distributions.MRCAPrior.monophyletic,
+            beast.math.distributions.MRCAPrior.taxonset,
+            beast.evolution.branchratemodel.UCRelaxedClockModel.tree,
+            beast.evolution.branchratemodel.UCRelaxedClockModel.rateCategories,
+            beast.evolution.branchratemodel.RandomLocalClockModel.tree,
+            beast.evolution.branchratemodel.RandomLocalClockModel.meanRate,
+            beast.evolution.branchratemodel.RandomLocalClockModel.indicators,
+            beast.evolution.operators.ScaleOperator.indicator,
+	        beast.core.Operator.weight,
+			beast.evolution.speciation.SpeciesTreePrior.bottomPopSize,
+			beast.evolution.speciation.SpeciesTreePrior.topPopSize,
+			beast.evolution.speciation.SpeciesTreePrior.taxonset,
+			beast.evolution.speciation.SpeciesTreePrior.tree,
+			beast.evolution.speciation.SpeciesTreePrior.treeIntervals,
+			beast.evolution.speciation.YuleModel.treeIntervals,
+			beast.evolution.speciation.YuleModel.useTipDates,
+			beast.evolution.speciation.YuleModel.tree,
+            beast.core.Logger.model,
+            stacey.util.Bindings,
+	        stacey.util.BitUnion,
+	        stacey.util.FitsHeights,
+	        stacey.util.InverseGammaMixture,
+	        stacey.util.Misc,
+	        stacey.util.UnionArrays,
+	        stacey.BirthDeathCollapseModel,
+	        stacey.BirthDeathCollapseNClustersStatistic,
+	        stacey.CoordinatedPruneRegraft,
+	        stacey.FocusedNodeHeightScaler,
+	        stacey.GtreeAndCoalFactor,
+	        stacey.GtreeAndCoalFactorInputEditor,
+	        stacey.InverseGammaComponent,
+	        stacey.NodesNudge,
+	        stacey.PIOMSCoalescentDistribution,
+	        stacey.PIOMSCoalescentDistributionInputEditor,
+	        stacey.PopSampleStatistic,
+			stacey.StaceyNodeReheight,
+			stacey.ThreeBranchAdjuster
+            '
+        buttonLabelMap='beast.app.beauti.BeautiInitDlg.&gt;&gt; details=Edit parameters'
+    >
+
+
+        <panel spec='BeautiPanelConfig' panelname="Partitions" tiptext="Data Partitions"
+            path='distribution/distribution[id="likelihood"]/distribution/data'
+            hasPartitions="none" icon='2220.pngx' forceExpansion='FALSE'
+            type='beast.evolution.alignment.Alignment'
+        />
+		<mergepoint id='aux-partitions-panels'/>
+
+		<panel spec='BeautiPanelConfig' panelname="Taxon sets" tiptext="Specify taxon sets that make up species"
+            path='distribution/distribution[id="smcCoalescent"]/taxonset'
+            hasPartitions="none" icon='1.pngx' forceExpansion='TRUE'
+        />
+
+        <panel spec='BeautiPanelConfig' panelname="Site Model" tiptext="Site model and substitution model specifications"
+            path='siteModel'
+            hasPartitions="SiteModel" icon='3.pngx' forceExpansion='TRUE'
+        />
+		<mergepoint id='aux-sitemodel-panels'/>
+
+		<panel spec='BeautiPanelConfig' panelname="Clock Model" tiptext="Clock model"
+            path='branchRateModel'
+            hasPartitions="ClockModel" icon='4.pngx' forceExpansion='TRUE'
+        />
+		<mergepoint id='aux-clockmodel-panels'/>
+
+		<panel spec='BeautiPanelConfig' panelname="Initialization" tiptext="Initial state"
+            path='state/stateNode'
+            hasPartitions="none" icon='6.pngx' forceExpansion='TRUE_START_COLLAPSED'
+            isVisible='false'
+        />
+		<mergepoint id='aux-initilisation-panels'/>
+
+        <!-- GRJ panelname change, tiptext change, id change speciescoalescent->smcCoalescent throughout file-->
+        <panel spec='BeautiPanelConfig' panelname="STACEY Coalescent" tiptext="STACEY Multi Species Coalescent specific settings"
+            path='distribution/distribution[id="smcCoalescent"]/geneTree'
+            hasPartitions="none" icon='2.pngx' forceExpansion='TRUE'
+        />
+
+		<panel spec='BeautiPanelConfig' panelname="Priors" tiptext="Other priors"
+            path='distribution/distribution[id="prior"]/distribution'
+            hasPartitions="none" icon='7.pngx' forceExpansion='TRUE_START_COLLAPSED'
+            type='beast.core.Distribution'  buttonStatus='ADD_ONLY'
+        />
+		<mergepoint id='aux-priors-panels'/>
+
+		<panel spec='BeautiPanelConfig' panelname="Operators" tiptext="MCMC Operator details"
+            path='operator'
+            hasPartitions="none" icon='8.pngx' forceExpansion='TRUE_START_COLLAPSED'
+            isVisible='false'
+        />
+		<mergepoint id='aux-operators-panels'/>
+
+		<panel spec='BeautiPanelConfig' panelname="MCMC" tiptext="MCMC parameters"
+            path=''
+            hasPartitions="none" icon='9.pngx' forceExpansion='TRUE'
+        />
+		<mergepoint id='aux-panels'/>
+
+		<alignmentProvider id="Add Alignment" spec='BeautiAlignmentProvider' template='@StarBEASTPartitionTemplate'/>
+
+
+        <partitiontemplate id='StarBEASTPartitionTemplate' spec='BeautiSubTemplate' class='beast.evolution.likelihood.TreeLikelihood' mainid='mcmc'>
+<![CDATA[
+
+            <!-- GRJ changed from GeneTreeForSpeciesTreeDistribution to stacey.GtreeAndCoalFactor -->
+           <!-- -->
+		    <distribution id='gTreeCF.t:$(n)' spec='stacey.GtreeAndCoalFactor' tree='@Tree.t:$(n)'/>
+
+            <!-- site model                                                              -->
+            <plugin spec='SiteModel' id="SiteModel.s:$(n)" gammaCategoryCount='0'>
+                <!--substModel will be automatically detected /-->
+                <proportionInvariant spec='parameter.RealParameter' id='proportionInvariant.s:$(n)' value='0.0' lower='0' upper='1' estimate='false'/>
+                <mutationRate        spec='parameter.RealParameter' id='mutationRate.s:$(n)' value='1.0'        estimate='false'/>
+                <shape               spec='parameter.RealParameter' id='gammaShape.s:$(n)' value='1.0'         estimate='false'/>
+            </plugin>
+
+            <plugin spec='TreeLikelihood' id="treeLikelihood.$(n)">
+                <data idref="data"/>
+                <tree idref="Tree.t:$(n)"/>
+                <siteModel idref="SiteModel.s:$(n)"/>
+                <branchRateModel spec='StrictClockModel' id='StrictClock.c:$(n)'>
+                    <clock.rate id='clockRate.c:$(n)' spec='parameter.RealParameter' value='1.0' estimate='false'/>
+                </branchRateModel>
+            </plugin>
+
+	        <prior id='ClockPrior.c:$(n)' x='@clockRate.c:$(n)'><distr spec="beast.math.distributions.Uniform" upper='Infinity'/></prior>
+	        <prior id='MutationRatePrior.s:$(n)' x='@mutationRate.s:$(n)'><distr spec="OneOnX"/></prior>
+
+            <!-- tree and its properties -->
+            <taxonset id='TaxonSet.$(n)' spec='beast.evolution.alignment.TaxonSet' alignment='@$(n)' />
+            <plugin spec='beast.evolution.tree.Tree' id='Tree.t:$(n)' taxonset='@TaxonSet.$(n)'/>
+
+            <!--plugin spec='beast.evolution.tree.RandomTree' id='RandomTree.t:$(n)' estimate='false' trait='@datetrait.$(n)' initial='@Tree.t:$(n)'-->
+			<tree spec='RandomGeneTree' id='RandomGeneTree.t:$(n)' initial='@Tree.t:$(n)' speciesTree='@Tree.t:Species' taxa='@$(n)'>
+				<populationModel id='RGTPopulationModel.t:$(n)' spec='ConstantPopulation'>
+					<popSize id='RGTPopSize.t:$(n)' spec='parameter.RealParameter' value='0.05'/>
+				</populationModel>
+			</tree>
+
+            <plugin id='TreeHeight.t:$(n)' spec='beast.evolution.tree.TreeHeightLogger' tree='@Tree.t:$(n)'/>
+
+            <logger id='treelog.t:$(n)' spec='beast.core.Logger' logEvery="5000" fileName="$(tree).$(seed).trees" mode='tree'>
+	            <log id='TreeWithMetaDataLogger.t:$(n)' spec='beast.evolution.tree.TreeWithMetaDataLogger' tree='@Tree.t:$(n)'>
+	            </log>
+            </logger>
+
+            <operator id='proportionInvariantScaler.s:$(n)' spec='ScaleOperator' scaleFactor="0.5" weight="0.5" parameter="@proportionInvariant.s:$(n)"/>
+            <operator id='mutationRateScaler.s:$(n)' spec='ScaleOperator' scaleFactor="0.5" weight="0.5" parameter="@mutationRate.s:$(n)"/>
+            <operator id='gammaShapeScaler.s:$(n)' spec='ScaleOperator' scaleFactor="0.5" weight="0.5" parameter="@gammaShape.s:$(n)"/>
+
+            <operator id='treeScaler.t:$(n)' spec='ScaleOperator' scaleFactor="0.5" weight="3" tree="@Tree.t:$(n)"/>
+            <operator id='treeRootScaler.t:$(n)' spec='ScaleOperator' scaleFactor="0.5" weight="3" tree="@Tree.t:$(n)" rootOnly='true'/>
+            <operator id='UniformOperator.t:$(n)' spec='Uniform' weight="30" tree="@Tree.t:$(n)"/>
+            <operator id='SubtreeSlide.t:$(n)' spec='SubtreeSlide' weight="15" gaussian="true" size="1.0" tree="@Tree.t:$(n)"/>
+            <operator id='narrow.t:$(n)' spec='Exchange' isNarrow='true' weight="15" tree="@Tree.t:$(n)"/>
+            <operator id='wide.t:$(n)' spec='Exchange' isNarrow='false' weight="3" tree="@Tree.t:$(n)"/>
+            <operator id='WilsonBalding.t:$(n)' spec='WilsonBalding' weight="3" tree="@Tree.t:$(n)"/>
+
+            <operator id='updown.$(n)' spec='UpDownOperator' scaleFactor="0.75" weight="3">
+                <up idref="clockRate.c:$(n)"/>
+                <down idref="Tree.t:$(n)"/>
+            </operator>
+
+            <prior id='GammaShapePrior.s:$(n)' x='@gammaShape.s:$(n)'><distr spec="beast.math.distributions.Exponential" mean='1'/></prior>
+            <prior id='PropInvariantPrior.t:$(n)' x='@proportionInvariant.s:$(n)'><distr spec="beast.math.distributions.Uniform" lower='0' upper='1'/></prior>
+			<operator id='StrictClockRateScaler.c:$(n)' spec='ScaleOperator' scaleFactor="0.75" weight="3" parameter='@clockRate.c:$(n)'/>
+			<!-- need updown operator for clockRate?!? Also in SubstModel.xml -->
+
+
+]]>
+
+			<!-- GRJ removed treePrior.t:$(n), treeTopFinder ifrom sections below-->
+
+            <connect srcID='treeLikelihood.$(n)'         targetID='likelihood' inputName='distribution' if="isInitializing"/>
+            <connect srcID='treelog.t:$(n)'              targetID='mcmc' inputName='logger' if='inposterior(Tree.t:$(n)) and Tree.t:$(n)/estimate=true'/>
+            <!-- GRJ changed inputName 'distribution' to geneTree -->
+            <connect srcID='gTreeCF.t:$(n)'              targetID='smcCoalescent' inputName='geneTree' if='inposterior(Tree.t:$(n)) and Tree.t:$(n)/estimate=true'/>
+            <connect srcID='ClockPrior.c:$(n)'           targetID='prior' inputName='distribution' if='inposterior(clockRate.c:$(n)) and clockRate.c:$(n)/estimate=true'/>
+            <!-- when FixMeanMutationRatesOperator, the prior is uniform due to the operator -->
+            <connect srcID='MutationRatePrior.s:$(n)'    targetID='prior' inputName='distribution' if='nooperator(FixMeanMutationRatesOperator) and inposterior(mutationRate.s:$(n)) and mutationRate.s:$(n)/estimate=true'/>
+
+            <connect srcID='Tree.t:$(n)'                 targetID='state' inputName='stateNode' if='inposterior(Tree.t:$(n)) and Tree.t:$(n)/estimate=true'/>
+            <connect srcID='proportionInvariant.s:$(n)'  targetID='state' inputName='stateNode' if='inposterior(proportionInvariant.s:$(n)) and proportionInvariant.s:$(n)/estimate=true'/>
+            <connect srcID='mutationRate.s:$(n)'         targetID='state' inputName='stateNode' if='inposterior(mutationRate.s:$(n)) and mutationRate.s:$(n)/estimate=true'/>
+            <connect srcID='gammaShape.s:$(n)'           targetID='state' inputName='stateNode' if='inposterior(gammaShape.s:$(n)) and gammaShape.s:$(n)/estimate=true'/>
+            <connect srcID='clockRate.s:$(n)'            targetID='state' inputName='stateNode' if='inposterior(clockRate.s:$(n)) and clockRate.s:$(n)/estimate=true'/>
+
+            <connect srcID='proportionInvariantScaler.s:$(n)' targetID='mcmc' inputName='operator' if='inposterior(proportionInvariant.s:$(n)) and proportionInvariant.s:$(n)/estimate=true'/>
+            <connect srcID='mutationRateScaler.s:$(n)'        targetID='mcmc' inputName='operator' if='nooperator(FixMeanMutationRatesOperator) and inposterior(mutationRate.s:$(n)) and mutationRate.s:$(n)/estimate=true'/>
+            <connect srcID='gammaShapeScaler.s:$(n)'          targetID='mcmc' inputName='operator' if='inposterior(gammaShape.s:$(n)) and gammaShape.s:$(n)/estimate=true'/>
+            <connect srcID='StrictClockRateScaler.c:$(n)'     targetID='mcmc' inputName='operator' if='inposterior(clockRate.c:$(n)) and clockRate.c:$(n)/estimate=true'/>
+
+            <connect srcID='treeScaler.t:$(n)'                targetID='mcmc' inputName='operator' if='inposterior(Tree.t:$(n)) and Tree.t:$(n)/estimate=true'/>
+            <connect srcID='treeRootScaler.t:$(n)'            targetID='mcmc' inputName='operator' if='inposterior(Tree.t:$(n)) and Tree.t:$(n)/estimate=true'>Scales root node for tree t:$(n)</connect>
+            <connect srcID='UniformOperator.t:$(n)'           targetID='mcmc' inputName='operator' if='inposterior(Tree.t:$(n)) and Tree.t:$(n)/estimate=true'/>
+            <connect srcID='SubtreeSlide.t:$(n)'              targetID='mcmc' inputName='operator' if='inposterior(Tree.t:$(n)) and Tree.t:$(n)/estimate=true'/>
+            <connect srcID='narrow.t:$(n)'                    targetID='mcmc' inputName='operator' if='inposterior(Tree.t:$(n)) and Tree.t:$(n)/estimate=true'/>
+            <connect srcID='wide.t:$(n)'                      targetID='mcmc' inputName='operator' if='inposterior(Tree.t:$(n)) and Tree.t:$(n)/estimate=true'/>
+            <connect srcID='WilsonBalding.t:$(n)'             targetID='mcmc' inputName='operator' if='inposterior(Tree.t:$(n)) and Tree.t:$(n)/estimate=true'/>
+            <connect srcID='updown.$(n)'                      targetID='mcmc' inputName='operator' if='nooperator(FixMeanRatesOperator) and inposterior(Tree.t:$(n)) and Tree.t:$(n)/estimate=true and inlikelihood(clockRate.c:$(n)) and clockRate.c:$(n)/estimate=true'/>
+
+            <connect srcID='treeLikelihood.$(n)'         targetID='tracelog' inputName='log' if='inlikelihood(treeLikelihood.$(n))'/>
+            <connect srcID='TreeHeight.t:$(n)'           targetID='tracelog' inputName='log' if='inposterior(Tree.t:$(n)) and Tree.t:$(n)/estimate=true'/>
+            <connect srcID='proportionInvariant.s:$(n)'  targetID='tracelog' inputName='log' if='inlikelihood(proportionInvariant.s:$(n)) and proportionInvariant.s:$(n)/estimate=true'/>
+            <connect srcID='mutationRate.s:$(n)'         targetID='tracelog' inputName='log' if='inlikelihood(mutationRate.s:$(n)) and mutationRate.s:$(n)/estimate=true'/>
+            <connect srcID='gammaShape.s:$(n)'           targetID='tracelog' inputName='log' if='inlikelihood(gammaShape.s:$(n)) and gammaShape.s:$(n)/estimate=true'/>
+            <connect srcID='clockRate.c:$(n)'            targetID='tracelog' inputName='log' if='inlikelihood(clockRate.c:$(n)) and clockRate.c:$(n)/estimate=true'/>
+
+            <connect srcID='GammaShapePrior.s:$(n)'      targetID='prior' inputName='distribution' if='inlikelihood(gammaShape.s:$(n)) and gammaShape.s:$(n)/estimate=true'/>
+            <connect srcID='PropInvariantPrior.s:$(n)'   targetID='prior' inputName='distribution' if='inlikelihood(proportionInvariant.s:$(n)) and proportionInvariant.s:$(n)/estimate=true'/>
+			
+			<!-- OPERATORS -->
+			<!-- GRJ new operators added. connect, then the hack to disconnect -->
+            <connect srcID='Tree.t:$(n)'        targetID='Reheight.t:Species'                inputName='genetree' if='Tree.t:$(n)/estimate=true'/>
+            <connect srcID='Tree.t:$(n)'        targetID='StaceyNodeReheight.t:Species'      inputName='geneTree' if='Tree.t:$(n)/estimate=true'/>
+            <connect srcID='Tree.t:$(n)'        targetID='NodesNudge.t:Species'              inputName='geneTree' if='Tree.t:$(n)/estimate=true'/>
+            <connect srcID='Tree.t:$(n)'        targetID='FocusedNodeHeightScaler.t:Species' inputName='geneTree' if='Tree.t:$(n)/estimate=true'/>
+            <connect srcID='Tree.t:$(n)'        targetID='CoordinatedPruneRegraft.t:Species' inputName='geneTree' if='Tree.t:$(n)/estimate=true'/>
+            <connect srcID='Tree.t:$(n)'        targetID='ThreeBranchAdjuster.t:Species'     inputName='geneTree' if='Tree.t:$(n)/estimate=true'/>
+			
+	        <connect srcID='Tree.t:$(n)'        targetID='upGrowthClocks.downPopsHeights100' inputName='down' if='inposterior(Tree.t:$(n)) and Tree.t:$(n)/estimate=true'/>
+	        <connect srcID='clockRate.c:$(n)'   targetID='upGrowthClocks.downPopsHeights100' inputName='up'   if='nooperator(FixMeanRatesOperator) and inlikelihood(clockRate.c:$(n)) and clockRate.c:$(n)/estimate=true'/>
+	        <connect srcID='Tree.t:$(n)'        targetID='upGrowthClocks.downPopsHeights350' inputName='down' if='inposterior(Tree.t:$(n)) and Tree.t:$(n)/estimate=true'/>
+	        <connect srcID='clockRate.c:$(n)'   targetID='upGrowthClocks.downPopsHeights350' inputName='up'   if='nooperator(FixMeanRatesOperator) and inlikelihood(clockRate.c:$(n)) and clockRate.c:$(n)/estimate=true'/>
+	        <connect srcID='Tree.t:$(n)'        targetID='upGrowthClocks.downPopsHeights700' inputName='down' if='inposterior(Tree.t:$(n)) and Tree.t:$(n)/estimate=true'/>
+	        <connect srcID='clockRate.c:$(n)'   targetID='upGrowthClocks.downPopsHeights700' inputName='up'   if='nooperator(FixMeanRatesOperator) and inlikelihood(clockRate.c:$(n)) and clockRate.c:$(n)/estimate=true'/>
+	        <connect srcID='Tree.t:$(n)'        targetID='upGrowthClocks.downPopsHeights900' inputName='down' if='inposterior(Tree.t:$(n)) and Tree.t:$(n)/estimate=true'/>
+	        <connect srcID='clockRate.c:$(n)'   targetID='upGrowthClocks.downPopsHeights900' inputName='up'   if='nooperator(FixMeanRatesOperator) and inlikelihood(clockRate.c:$(n)) and clockRate.c:$(n)/estimate=true'/>
+	        <connect srcID='Tree.t:$(n)'        targetID='upGrowthClocks.downPopsHeights970' inputName='down' if='inposterior(Tree.t:$(n)) and Tree.t:$(n)/estimate=true'/>
+	        <connect srcID='clockRate.c:$(n)'   targetID='upGrowthClocks.downPopsHeights970' inputName='up'   if='nooperator(FixMeanRatesOperator) and inlikelihood(clockRate.c:$(n)) and clockRate.c:$(n)/estimate=true'/>
+	        <connect srcID='Tree.t:$(n)'        targetID='upGrowthClocks.downPopsHeights990' inputName='down' if='inposterior(Tree.t:$(n)) and Tree.t:$(n)/estimate=true'/>
+	        <connect srcID='clockRate.c:$(n)'   targetID='upGrowthClocks.downPopsHeights990' inputName='up'   if='nooperator(FixMeanRatesOperator) and inlikelihood(clockRate.c:$(n)) and clockRate.c:$(n)/estimate=true'/>
+	        <connect srcID='Tree.t:$(n)'        targetID='upGrowthClocks.downPopsHeights997' inputName='down' if='inposterior(Tree.t:$(n)) and Tree.t:$(n)/estimate=true'/>
+	        <connect srcID='clockRate.c:$(n)'   targetID='upGrowthClocks.downPopsHeights997' inputName='up'   if='nooperator(FixMeanRatesOperator) and inlikelihood(clockRate.c:$(n)) and clockRate.c:$(n)/estimate=true'/>
+	        <connect srcID='Tree.t:$(n)'        targetID='upGrowthClocks.downPopsHeights999' inputName='down' if='inposterior(Tree.t:$(n)) and Tree.t:$(n)/estimate=true'/>
+	        <connect srcID='clockRate.c:$(n)'   targetID='upGrowthClocks.downPopsHeights999' inputName='up'   if='nooperator(FixMeanRatesOperator) and inlikelihood(clockRate.c:$(n)) and clockRate.c:$(n)/estimate=true'/>
+ 			<!-- Since 'Species' is treated as a separate partition, we need the following hack to get rid of undesirable Tree.t:Species connections -->
+            <connect srcID='Tree.t:Species'     targetID='Reheight.t:Species'                inputName='genetree' if='Tree.t:$(n)/estimate=XXX'/>
+            <connect srcID='Tree.t:Species'     targetID='StaceyNodeReheight.t:Species'      inputName='geneTree' if='Tree.t:$(n)/estimate=XXX'/>
+            <connect srcID='Tree.t:Species'     targetID='NodesNudge.t:Species'              inputName='geneTree' if='Tree.t:$(n)/estimate=XXX'/>
+            <connect srcID='Tree.t:Species'     targetID='FocusedNodeHeightScaler.t:Species' inputName='geneTree' if='Tree.t:$(n)/estimate=XXX'/>
+            <connect srcID='Tree.t:Species'     targetID='CoordinatedPruneRegraft.t:Species' inputName='geneTree' if='Tree.t:$(n)/estimate=XXX'/>
+            <connect srcID='Tree.t:Species'     targetID='ThreeBranchAdjuster.t:Species'     inputName='geneTree' if='Tree.t:$(n)/estimate=XXX'/>
+			
+            <connect srcID='bdcGrowthRate.t:Species' targetID='upGrowthClocks.downPopsHeights100' inputName='up'   if='inposterior(bdcGrowthRate.t:Species) and bdcGrowthRate.t:Species/estimate=true'/>
+            <connect srcID='popPriorScale'           targetID='upGrowthClocks.downPopsHeights100' inputName='down' if='inposterior(popPriorScale) and popPriorScale/estimate=true'/>
+            <connect srcID='bdcGrowthRate.t:Species' targetID='upGrowthClocks.downPopsHeights350' inputName='up'   if='inposterior(bdcGrowthRate.t:Species) and bdcGrowthRate.t:Species/estimate=true'/>
+            <connect srcID='popPriorScale'           targetID='upGrowthClocks.downPopsHeights350' inputName='down' if='inposterior(popPriorScale) and popPriorScale/estimate=true'/>
+            <connect srcID='bdcGrowthRate.t:Species' targetID='upGrowthClocks.downPopsHeights700' inputName='up'   if='inposterior(bdcGrowthRate.t:Species) and bdcGrowthRate.t:Species/estimate=true'/>
+            <connect srcID='popPriorScale'           targetID='upGrowthClocks.downPopsHeights700' inputName='down' if='inposterior(popPriorScale) and popPriorScale/estimate=true'/>
+            <connect srcID='bdcGrowthRate.t:Species' targetID='upGrowthClocks.downPopsHeights900' inputName='up'   if='inposterior(bdcGrowthRate.t:Species) and bdcGrowthRate.t:Species/estimate=true'/>
+            <connect srcID='popPriorScale'           targetID='upGrowthClocks.downPopsHeights900' inputName='down' if='inposterior(popPriorScale) and popPriorScale/estimate=true'/>
+            <connect srcID='bdcGrowthRate.t:Species' targetID='upGrowthClocks.downPopsHeights970' inputName='up'   if='inposterior(bdcGrowthRate.t:Species) and bdcGrowthRate.t:Species/estimate=true'/>
+            <connect srcID='popPriorScale'           targetID='upGrowthClocks.downPopsHeights970' inputName='down' if='inposterior(popPriorScale) and popPriorScale/estimate=true'/>
+            <connect srcID='bdcGrowthRate.t:Species' targetID='upGrowthClocks.downPopsHeights990' inputName='up'   if='inposterior(bdcGrowthRate.t:Species) and bdcGrowthRate.t:Species/estimate=true'/>
+            <connect srcID='popPriorScale'           targetID='upGrowthClocks.downPopsHeights990' inputName='down' if='inposterior(popPriorScale) and popPriorScale/estimate=true'/>
+            <connect srcID='bdcGrowthRate.t:Species' targetID='upGrowthClocks.downPopsHeights997' inputName='up'   if='inposterior(bdcGrowthRate.t:Species) and bdcGrowthRate.t:Species/estimate=true'/>
+            <connect srcID='popPriorScale'           targetID='upGrowthClocks.downPopsHeights997' inputName='down' if='inposterior(popPriorScale) and popPriorScale/estimate=true'/>
+            <connect srcID='bdcGrowthRate.t:Species' targetID='upGrowthClocks.downPopsHeights999' inputName='up'   if='inposterior(bdcGrowthRate.t:Species) and bdcGrowthRate.t:Species/estimate=true'/>
+            <connect srcID='popPriorScale'           targetID='upGrowthClocks.downPopsHeights999' inputName='down' if='inposterior(popPriorScale) and popPriorScale/estimate=true'/>
+
+            <!-- initialise species and gene trees -->
+			<connect srcID="RandomTree.t:Species"          targetID='mcmc' inputName='init'/>
+            <connect srcID='RandomGeneTree.t:$(n)'         targetID='mcmc' inputName='init' if='inposterior(Tree.t:$(n))'/>
+
+			<mergepoint id='aux-partitiontemplate'/>
+        </partitiontemplate>
+
+		<mergepoint id='substModelTemplates'/>
+		<mergepoint id='clockModelTemplates'/>
+		<mergepoint id='treePriorTemplates'/>
+        <mergepoint id='parametricDistributions'/>
+
+    </beauticonfig>
+
+
+	<taxonset spec='beast.evolution.alignment.TaxonSet' id='taxonsuperset'>
+		<!-- need to specify at least one taxon for a TaxonSet, so insert a dummy taxon here. This one is cleared by the TaxonSetInputEditor -->
+		<taxon spec='beast.evolution.alignment.TaxonSet' id='Beauti2DummyTaxonSet'>
+			<taxon spec='beast.evolution.alignment.Taxon' id='dummyTaxon'/>
+		</taxon>
+	</taxonset>
+
+	<tree spec='beast.evolution.tree.Tree' id='Tree.t:Species' taxonset='@taxonsuperset' estimate='true'/>
+
+	<treetop spec='TreeTopFinder' id='treeTopFinder'/>
+
+    
+	<mergepoint id='misc'/>
+
+
+    <!-- framework for main model -->
+    <run spec="MCMC" id="mcmc" storeEvery="1000000" chainLength="10000000">
+
+        <state storeEvery='1000000' id='state'>
+	        <stateNode idref='Tree.t:Species'/>
+            <stateNode idref='bdcGrowthRate.t:Species'/>
+            <stateNode idref='relativeDeathRate.t:Species'/>
+            <stateNode idref='collapseWeight.t:Species'/>
+            <stateNode idref='originHeight.t:Species'/>
+            <stateNode idref='popPriorScale'/>
+        </state>
+
+        <!-- GRJ changed -->
+        <distribution spec="CompoundDistribution" id="posterior">
+            <distribution spec="stacey.PIOMSCoalescentDistribution" id="smcCoalescent" tree="@Tree.t:Species" taxonset='@taxonsuperset'>
+                <!-- GRJ gtrees to do ????  -->
+                <popPriorInvGamma id="InvGammaComponent.1" spec="stacey.InverseGammaComponent">
+                    <parameter name='weight' id='InvGammaComponentWeight.1' value='1.0' estimate="false"/>
+                    <parameter name='beta' id='InvGammaComponentBeta.1' value='2.0' estimate="false"/>
+                    <parameter name='alpha' id='InvGammaComponentAlpha.1' value='3' estimate="false"/>
+                </popPriorInvGamma>
+                <parameter name='popPriorScale' id='popPriorScale' value='0.02' estimate="true"/>
+                <mergepoint id='aux-priors'/>
+            </distribution>
+
+            <distribution spec="CompoundDistribution" id="prior">
+                <!--  BirthDeathCollapse prior for smcTree  -->
+                <distribution id="BirthDeathCollapseModel.t:Species" spec="stacey.BirthDeathCollapseModel" collapseHeight="1e-04" >
+                    <tree idref="Tree.t:Species"/>
+                    <birthDiffRate spec='parameter.RealParameter' id="bdcGrowthRate.t:Species" value='100.0' lower='1.0E-99' upper='1.0E99' />
+                    <relativeDeathRate spec='parameter.RealParameter' id="relativeDeathRate.t:Species" value='0.5' lower='0' upper='1.0' />
+                    <collapseWeight spec='parameter.RealParameter' id="collapseWeight.t:Species" value='0.5' lower='0' upper='1.0' />
+                    <originHeight spec='parameter.RealParameter' id="originHeight.t:Species" value='100.0' lower='1.0E-99' upper='1.0E99' />
+                </distribution>
+                <!--  Priors for BirthDeathCollapse hyperparameters  -->
+                <!-- GRJ TODO this doesn't work. It become Uniform in Beauti and cannot be changed, although graph shows lognormal
+                <prior id="bdcGrowthRatePrior.t:Species" name="distribution" x="@bdcGrowthRate.t:Species" >
+                    <LogNormal name="distr" id="LogNormal.bdcGrowthRate.smcTreePrior" >
+                        <parameter name="M" id="mean.bdcGrowthRatePrior.smcTreePrior" estimate="false" >4.6</parameter>
+                        <parameter name="S" id="sd.bdcGrowthRatePrior.smcTreePrior" estimate="false" >2</parameter>
+                    </LogNormal>
+                </prior>-->
+                <distribution id='bdcGrowthRatePrior.t:Species' spec='beast.math.distributions.Prior' x='@bdcGrowthRate.t:Species'>
+                    <distr spec="beast.math.distributions.OneOnX"/>
+                </distribution>
+
+                <prior id="bdcRelativeDeathRate.smcTreePrior" name="distribution" x="@relativeDeathRate.t:Species" >
+                    <Beta name="distr" id="Beta.bdcRelativeDeathRate.smcTreePrior" >
+                        <parameter name="alpha" id="alpha.bdcRelativeDeathRate.smcTreePrior" estimate="false" >1</parameter>
+                        <parameter name="beta" id="beta.bdcRelativeDeathRate.smcTreePrior" estimate="false" >1</parameter>
+                    </Beta>
+                </prior>
+                <prior id="bdcCollapseWeight.smcTreePrior" name="distribution" x="@collapseWeight.t:Species" >
+                    <Beta name="distr" id="Beta.bdcCollapseWeight.smcTreePrior" >
+                        <parameter name="alpha" id="alpha.bdcCollapseWeight.smcTreePrior" estimate="false" >1</parameter>
+                        <parameter name="beta" id="beta.bdcCollapseWeight.smcTreePrior" estimate="false" >1</parameter>
+                    </Beta>
+                </prior>
+                <!--  Hyper-prior for population scale factor  -->
+
+                <!-- GRJ TODO this don't work, see above
+                <distribution id='popScalePrior' spec='beast.math.distributions.Prior' x='@popPriorScale'>
+                    <LogNormal name="distr" id="LogNormal.popScale.smcTreePrior" >
+                        <parameter name="M" id="mean.popScale.smcTreePrior" estimate="false" >-7</parameter>
+                        <parameter name="S" id="sd.popScale.smcTreePrior" estimate="false" >2</parameter>
+                    </LogNormal>
+                </distribution>-->
+
+                <distribution id='popScalePrior' spec='beast.math.distributions.Prior' x='@popPriorScale'>
+                    <distr spec="beast.math.distributions.OneOnX"/>
+                </distribution>
+            </distribution>
+
+            <distribution spec="CompoundDistribution" id="likelihood">
+                <mergepoint id='aux-likelihoods'/>
+            </distribution>
+        </distribution>
+
+		<!-- GRJ new operators -->
+        <operator id="Reheight.t:Species"                spec="NodeReheight"                      tree="@Tree.t:Species" weight="94" taxonset='@taxonsuperset'/>
+        <operator id="StaceyNodeReheight.t:Species"      spec="stacey.StaceyNodeReheight"      smcTree="@Tree.t:Species" weight="94" popSF="@popPriorScale"/>
+        <operator id="NodesNudge.t:Species"              spec="stacey.NodesNudge"              smcTree="@Tree.t:Species" weight="94"/>
+        <operator id="FocusedNodeHeightScaler.t:Species" spec="stacey.FocusedNodeHeightScaler" smcTree="@Tree.t:Species" weight="94"/>
+        <operator id="CoordinatedPruneRegraft.t:Species" spec="stacey.CoordinatedPruneRegraft" smcTree="@Tree.t:Species" weight="94"/>
+        <operator id="ThreeBranchAdjuster.t:Species"     spec="stacey.ThreeBranchAdjuster"     smcTree="@Tree.t:Species" weight="94" popSF="@popPriorScale"/>
+
+	    <operator id='popPriorScaleScale.t:Species' spec='ScaleOperator' scaleFactor="0.75" weight="3" parameter="@popPriorScale"/>
+
+        <!-- GRJ This was updown.all.species. YuleBirthrate becomes bdcGrowthRate. popMean becomes popPriorScale. popSize gone. originHeight.t:Species added. -->
+        <!-- GRJ I use a range of un-optimised operators -->
+	    <operator id="upGrowthClocks.downPopsHeights100" spec='UpDownOperator' weight="2" scaleFactor="0.100" optimise="false">
+            <up idref="bdcGrowthRate.t:Species"/>
+            <down idref="popPriorScale"/>
+            <down idref="Tree.t:Species"/>
+            <down idref="originHeight.t:Species"/>
+	    </operator>
+	    <operator id="upGrowthClocks.downPopsHeights350" spec='UpDownOperator' weight="2" scaleFactor="0.100" optimise="false">
+            <up idref="bdcGrowthRate.t:Species"/>
+            <down idref="popPriorScale"/>
+            <down idref="Tree.t:Species"/>
+            <down idref="originHeight.t:Species"/>
+	    </operator>
+	    <operator id="upGrowthClocks.downPopsHeights700" spec='UpDownOperator' weight="2" scaleFactor="0.100" optimise="false">
+            <up idref="bdcGrowthRate.t:Species"/>
+            <down idref="popPriorScale"/>
+            <down idref="Tree.t:Species"/>
+            <down idref="originHeight.t:Species"/>
+	    </operator>
+	    <operator id="upGrowthClocks.downPopsHeights900" spec='UpDownOperator' weight="2" scaleFactor="0.100" optimise="false">
+            <up idref="bdcGrowthRate.t:Species"/>
+            <down idref="popPriorScale"/>
+            <down idref="Tree.t:Species"/>
+            <down idref="originHeight.t:Species"/>
+	    </operator>
+	    <operator id="upGrowthClocks.downPopsHeights970" spec='UpDownOperator' weight="2" scaleFactor="0.100" optimise="false">
+            <up idref="bdcGrowthRate.t:Species"/>
+            <down idref="popPriorScale"/>
+            <down idref="Tree.t:Species"/>
+            <down idref="originHeight.t:Species"/>
+	    </operator>
+	    <operator id="upGrowthClocks.downPopsHeights990" spec='UpDownOperator' weight="2" scaleFactor="0.100" optimise="false">
+            <up idref="bdcGrowthRate.t:Species"/>
+            <down idref="popPriorScale"/>
+            <down idref="Tree.t:Species"/>
+            <down idref="originHeight.t:Species"/>
+	    </operator>
+	    <operator id="upGrowthClocks.downPopsHeights997" spec='UpDownOperator' weight="2" scaleFactor="0.100" optimise="false">
+            <up idref="bdcGrowthRate.t:Species"/>
+            <down idref="popPriorScale"/>
+            <down idref="Tree.t:Species"/>
+            <down idref="originHeight.t:Species"/>
+	    </operator>
+	    <operator id="upGrowthClocks.downPopsHeights999" spec='UpDownOperator' weight="2" scaleFactor="0.999" optimise="false">
+            <up idref="bdcGrowthRate.t:Species"/>
+            <down idref="popPriorScale"/>
+            <down idref="Tree.t:Species"/>
+            <down idref="originHeight.t:Species"/>
+	    </operator>
+
+
+        <operator id='bdcGrowthRateScaler100.t:Species'        spec='ScaleOperator'         scaleFactor="0.100" weight="0.4" parameter="@bdcGrowthRate.t:Species"     optimise="false" />
+        <operator id='bdcGrowthRateScaler350.t:Species'        spec='ScaleOperator'         scaleFactor="0.350" weight="0.4" parameter="@bdcGrowthRate.t:Species"     optimise="false" />
+        <operator id='bdcGrowthRateScaler700.t:Species'        spec='ScaleOperator'         scaleFactor="0.700" weight="0.4" parameter="@bdcGrowthRate.t:Species"     optimise="false" />
+        <operator id='bdcGrowthRateScaler900.t:Species'        spec='ScaleOperator'         scaleFactor="0.900" weight="0.4" parameter="@bdcGrowthRate.t:Species"     optimise="false" />
+        <operator id='bdcGrowthRateScaler970.t:Species'        spec='ScaleOperator'         scaleFactor="0.970" weight="0.4" parameter="@bdcGrowthRate.t:Species"     optimise="false" />
+        <operator id='bdcGrowthRateScaler990.t:Species'        spec='ScaleOperator'         scaleFactor="0.990" weight="0.4" parameter="@bdcGrowthRate.t:Species"     optimise="false" />
+        <operator id='bdcGrowthRateScaler997.t:Species'        spec='ScaleOperator'         scaleFactor="0.997" weight="0.4" parameter="@bdcGrowthRate.t:Species"     optimise="false" />
+        <operator id='bdcGrowthRateScaler999.t:Species'        spec='ScaleOperator'         scaleFactor="0.999" weight="0.4" parameter="@bdcGrowthRate.t:Species"     optimise="false" />
+
+        <operator id='bdcRelativeDeathRateScaler100.t:Species' spec='ScaleOperator'         scaleFactor="0.100" weight="0.2" parameter="@relativeDeathRate.t:Species" optimise="false" />
+        <operator id='bdcRelativeDeathRateScaler350.t:Species' spec='ScaleOperator'         scaleFactor="0.350" weight="0.2" parameter="@relativeDeathRate.t:Species" optimise="false" />
+        <operator id='bdcRelativeDeathRateScaler700.t:Species' spec='ScaleOperator'         scaleFactor="0.700" weight="0.2" parameter="@relativeDeathRate.t:Species" optimise="false" />
+        <operator id='bdcRelativeDeathRateScaler900.t:Species' spec='ScaleOperator'         scaleFactor="0.900" weight="0.2" parameter="@relativeDeathRate.t:Species" optimise="false" />
+        <operator id='bdcRelativeDeathRateScaler970.t:Species' spec='ScaleOperator'         scaleFactor="0.970" weight="0.2" parameter="@relativeDeathRate.t:Species" optimise="false" />
+        <operator id='bdcRelativeDeathRateScaler990.t:Species' spec='ScaleOperator'         scaleFactor="0.990" weight="0.2" parameter="@relativeDeathRate.t:Species" optimise="false" />
+        <operator id='bdcRelativeDeathRateScaler997.t:Species' spec='ScaleOperator'         scaleFactor="0.997" weight="0.2" parameter="@relativeDeathRate.t:Species" optimise="false" />
+        <operator id='bdcRelativeDeathRateScaler999.t:Species' spec='ScaleOperator'         scaleFactor="0.999" weight="0.2" parameter="@relativeDeathRate.t:Species" optimise="false" />
+        <operator id='bdcRelativeDeathRateRW0001.t:Species'    spec="RealRandomWalkOperator" windowSize="1e-04" weight="0.3" parameter="@relativeDeathRate.t:Species" />
+        <operator id='bdcRelativeDeathRateRW0010.t:Species'    spec="RealRandomWalkOperator" windowSize="0.001" weight="0.3" parameter="@relativeDeathRate.t:Species" />
+        <operator id='bdcRelativeDeathRateRW0100.t:Species'    spec="RealRandomWalkOperator" windowSize="0.010" weight="0.3" parameter="@relativeDeathRate.t:Species" />
+        <operator id='bdcRelativeDeathRateRW1000.t:Species'    spec="RealRandomWalkOperator" windowSize="0.100" weight="0.3" parameter="@relativeDeathRate.t:Species" />
+        <operator id='bdcRelativeDeathRateRW3000.t:Species'    spec="RealRandomWalkOperator" windowSize="0.300" weight="0.3" parameter="@relativeDeathRate.t:Species" />
+
+        <operator id='bdcCollapseWeightScaler100.t:Species'    spec='ScaleOperator'         scaleFactor="0.100" weight="0.2" parameter="@collapseWeight.t:Species"    optimise="false" />
+        <operator id='bdcCollapseWeightScaler350.t:Species'    spec='ScaleOperator'         scaleFactor="0.350" weight="0.2" parameter="@collapseWeight.t:Species"    optimise="false" />
+        <operator id='bdcCollapseWeightScaler700.t:Species'    spec='ScaleOperator'         scaleFactor="0.700" weight="0.2" parameter="@collapseWeight.t:Species"    optimise="false" />
+        <operator id='bdcCollapseWeightScaler900.t:Species'    spec='ScaleOperator'         scaleFactor="0.900" weight="0.2" parameter="@collapseWeight.t:Species"    optimise="false" />
+        <operator id='bdcCollapseWeightScaler970.t:Species'    spec='ScaleOperator'         scaleFactor="0.970" weight="0.2" parameter="@collapseWeight.t:Species"    optimise="false" />
+        <operator id='bdcCollapseWeightScaler990.t:Species'    spec='ScaleOperator'         scaleFactor="0.990" weight="0.2" parameter="@collapseWeight.t:Species"    optimise="false" />
+        <operator id='bdcCollapseWeightScaler997.t:Species'    spec='ScaleOperator'         scaleFactor="0.997" weight="0.2" parameter="@collapseWeight.t:Species"    optimise="false" />
+        <operator id='bdcCollapseWeightScaler999.t:Species'    spec='ScaleOperator'         scaleFactor="0.999" weight="0.2" parameter="@collapseWeight.t:Species"    optimise="false" />
+        <operator id='bdcCollapseWeightRW0001.t:Species'       spec='RealRandomWalkOperator' windowSize="1e-04" weight="0.3" parameter="@collapseWeight.t:Species" />
+        <operator id='bdcCollapseWeightRW0010.t:Species'       spec='RealRandomWalkOperator' windowSize="0.001" weight="0.3" parameter="@collapseWeight.t:Species" />
+        <operator id='bdcCollapseWeightRW0100.t:Species'       spec='RealRandomWalkOperator' windowSize="0.010" weight="0.3" parameter="@collapseWeight.t:Species" />
+        <operator id='bdcCollapseWeightRW1000.t:Species'       spec='RealRandomWalkOperator' windowSize="0.100" weight="0.3" parameter="@collapseWeight.t:Species" />
+        <operator id='bdcCollapseWeightRW3000.t:Species'       spec='RealRandomWalkOperator' windowSize="0.300" weight="0.3" parameter="@collapseWeight.t:Species" />
+		
+        <operator id='bdcOriginHeightScaler100.t:Species'      spec='ScaleOperator'         scaleFactor="0.100" weight="0.4" parameter="@originHeight.t:Species"      optimise="false" />
+        <operator id='bdcOriginHeightScaler350.t:Species'      spec='ScaleOperator'         scaleFactor="0.350" weight="0.4" parameter="@originHeight.t:Species"      optimise="false" />
+        <operator id='bdcOriginHeightScaler700.t:Species'      spec='ScaleOperator'         scaleFactor="0.700" weight="0.4" parameter="@originHeight.t:Species"      optimise="false" />
+        <operator id='bdcOriginHeightScaler900.t:Species'      spec='ScaleOperator'         scaleFactor="0.900" weight="0.4" parameter="@originHeight.t:Species"      optimise="false" />
+        <operator id='bdcOriginHeightScaler970.t:Species'      spec='ScaleOperator'         scaleFactor="0.970" weight="0.4" parameter="@originHeight.t:Species"      optimise="false" />
+        <operator id='bdcOriginHeightScaler990.t:Species'      spec='ScaleOperator'         scaleFactor="0.990" weight="0.4" parameter="@originHeight.t:Species"      optimise="false" />
+        <operator id='bdcOriginHeightScaler997.t:Species'      spec='ScaleOperator'         scaleFactor="0.997" weight="0.4" parameter="@originHeight.t:Species"      optimise="false" />
+        <operator id='bdcOriginHeightScaler999.t:Species'      spec='ScaleOperator'         scaleFactor="0.999" weight="0.4" parameter="@originHeight.t:Species"      optimise="false" />
+
+
+        <logger id='tracelog' logEvery="5000" fileName="beast_$(seed).log" sort="smart">
+	        <model idref='posterior'/>
+            <log idref="posterior"/>
+            <log idref="likelihood"/>
+            <log idref="prior"/>
+			<log idref="smcCoalescent"/>
+            <log idref="bdcGrowthRate.t:Species"/>
+            <log idref="relativeDeathRate.t:Species"/>
+            <log idref="collapseWeight.t:Species"/>
+            <log idref="originHeight.t:Species"/>
+            <log idref="popPriorScale"/>
+            <log spec="stacey.PopSampleStatistic" popPriorScale="@popPriorScale" piomsCoalDist="@smcCoalescent"/>
+            <log spec="stacey.BirthDeathCollapseNClustersStatistic" bdcm="@BirthDeathCollapseModel.t:Species" smcTree="@Tree.t:Species"/>
+			<log idref="BirthDeathCollapseModel.t:Species"/>
+            <log id='TreeHeight.Species' spec='beast.evolution.tree.TreeHeightLogger' tree='@Tree.t:Species'/>
+        </logger>
+
+		<logger fileName="species_$(seed).trees" id="speciesTreeLogger" logEvery="5000" mode="tree">
+		    <log id='SpeciesTreeLoggerX' spec='beast.evolution.tree.TreeWithMetaDataLogger' tree="@Tree.t:Species"/>
+		</logger>
+
+        <logger id='screenlog' logEvery="5000">
+	        <model idref='posterior'/>
+            <log idref="posterior"/>
+      	    <ESS spec='ESS' name='log' arg="@posterior"/>
+            <log idref="likelihood"/>
+            <log idref="prior"/>
+            <log spec="stacey.BirthDeathCollapseNClustersStatistic" bdcm="@BirthDeathCollapseModel.t:Species" smcTree="@Tree.t:Species"/>
+        </logger>
+
+
+<!-- use with calibrated yule-->
+        <init spec='beast.evolution.tree.RandomTree' id='RandomTree.t:Species' estimate='false'
+              initial='@Tree.t:Species' taxonset='@taxonsuperset' rootHeight='0.05'>
+            <populationModel id='ConstantPopulation0.Species' spec='ConstantPopulation'>
+        		<parameter id='randomPopSize.t:Species' name='popSize'>0.05</parameter>
+            </populationModel>
+        </init>
+
+    </run>
+
+</beast>
+
+
+
+
