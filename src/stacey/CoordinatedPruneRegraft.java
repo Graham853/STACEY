@@ -82,7 +82,7 @@ public class CoordinatedPruneRegraft extends Operator {
 
 
     // data for moving one subtree
-    private class OpCPRinfoGTreeSpecification {
+    private static class OpCPRinfoGTreeSpecification {
         private final Node source;
         private final double height;
         private final int choiceCount;
@@ -103,7 +103,7 @@ public class CoordinatedPruneRegraft extends Operator {
     }
 
 
-    private class OpCPRinfoSMCTreeSpecification {
+    private static class OpCPRinfoSMCTreeSpecification {
         private final BitUnion sppS;
         private final BitUnion sppDs[];
         private final double heightsDancs[];
@@ -621,15 +621,7 @@ public class CoordinatedPruneRegraft extends Operator {
     private static final Comparator<OpCPRinfoGTreeSpecification> GTREESPRSPEC_ORDER =
             new Comparator<OpCPRinfoGTreeSpecification>() {
                 public int compare(OpCPRinfoGTreeSpecification a, OpCPRinfoGTreeSpecification b) {
-                    if (a.getHeight() != b.getHeight()) {
-                        if (a.getHeight() < b.getHeight()) {
-                            return 1;
-                        } else {
-                            return -1;
-                        }
-                    } else {
-                        return 0;
-                    }
+                    return Double.compare(b.height, a.height);
                 }
             };
 

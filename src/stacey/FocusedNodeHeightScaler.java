@@ -81,7 +81,7 @@ public class FocusedNodeHeightScaler extends Operator {
     focus to the gene trees so they can calculate distances from the focus.
     This is used first, FSMoveSMCNodeInfo is used later in the calculation
     for the move. */
-    private class OpFSinfoSMCNodeUnions {
+    private static class OpFSinfoSMCNodeUnions {
         private final BitUnion nodeUnion;
         private final BitUnion lftUnion;
         private final BitUnion rgtUnion;
@@ -103,7 +103,7 @@ public class FocusedNodeHeightScaler extends Operator {
 
     /* This is used to pass information from all smcTree nodes to the gene trees
     so they can calculate bounds for the scaling. */
-    private class OpFSinfoSMCNode {
+    private static class OpFSinfoSMCNode {
         private final BitUnion lftUnion;
         private final BitUnion rgtUnion;
         private final double logHeight;
@@ -452,7 +452,7 @@ public class FocusedNodeHeightScaler extends Operator {
             boolean RoverlapsL = unionArrays.gNodeUnion(j, rgt).overlaps(sppL);
             boolean RoverlapsR = unionArrays.gNodeUnion(j, rgt).overlaps(sppR);
             boolean Rlinked = RoverlapsL & RoverlapsR;
-            return (linked & !Llinked & !Rlinked);
+            return (linked & !Llinked & !Rlinked); // Findbugs doesn't like this but I do.
         } else {
             return false;
         }

@@ -24,6 +24,7 @@ import beast.evolution.tree.Node;
 import beast.evolution.tree.Tree;
 import beast.evolution.tree.TreeInterface;
 
+
 import java.util.*;
 
 
@@ -32,7 +33,8 @@ import java.util.*;
 public class Misc {
 
     public static String allTreesAsText(TreeInterface sTree, List<Tree> gTrees) {
-        String text = "***************************   All trees   ********************************\n";
+        StringBuffer buffer = new StringBuffer();
+        buffer.append("***************************   All trees   ********************************\n");
         Bindings bindings = Bindings.initialise(sTree, gTrees);
         UnionArrays unionArrays = UnionArrays.initialise(sTree, gTrees, bindings);
         unionArrays.update();
@@ -41,17 +43,17 @@ public class Misc {
         for (int n = 0; n <sTree.getNodeCount(); n++) {
             sUnions[n] = unionArrays.sNodeUnion(n);
         }
-        text += beastSubtreeAsTextWithHeader(sTree.getRoot(), sUnions);
+        buffer.append(beastSubtreeAsTextWithHeader(sTree.getRoot(), sUnions));
         for (int j = 0; j < gTrees.size(); j++) {
             TreeInterface gTree = gTrees.get(j);
             BitUnion [] gUnions = new BitUnion[gTree.getNodeCount()];
             for (int i = 0; i < gTree.getNodeCount(); i++) {
                 gUnions[i] = unionArrays.gNodeUnion(j, i);
             }
-            text += "\nGene tree" + j + "\n";
-            text += beastSubtreeAsTextWithHeader(gTree.getRoot(), gUnions);
+            buffer.append("\nGene tree" + j + "\n");
+            buffer.append(beastSubtreeAsTextWithHeader(gTree.getRoot(), gUnions));
         }
-    return text;
+    return buffer.toString();
     }
 
 

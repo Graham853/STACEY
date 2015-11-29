@@ -94,7 +94,7 @@ public class NodesNudge extends Operator {
 
 
 
-    private class OpNNinfoSMCNode {
+    private static class OpNNinfoSMCNode {
         private final int nodeNr;
         private final double nodeHeight;
         private final double lftHeight;

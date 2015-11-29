@@ -36,22 +36,22 @@ public class Checks {
     public static void allTreesAndCompatibility(TreeInterface sTree, List<Tree> gTrees,
                                                 String opName, String when) {
         if (!Checks.treeIsOK(sTree)) {
-            System.out.println("BUG found in " + opName + ". Bad sTree " + when);
-            System.out.println(Misc.allTreesAsText(sTree, gTrees));
-            System.exit(1);
+            System.err.println("BUG found in " + opName + ". Bad sTree " + when);
+            System.err.println(Misc.allTreesAsText(sTree, gTrees));
+            throw new Error("Internal inconsistency. Exiting.");
         }
         for (TreeInterface gTree : gTrees) {
             if (!Checks.treeIsOK(gTree)) {
                 System.out.println("BUG found in " + opName + ". Bad gTree " + when);
                 System.out.println(Misc.allTreesAsText(sTree, gTrees));
-                System.exit(1);
+                throw new Error("Internal inconsistency. Exiting.");
             }
         }
         if (!Checks.compatible(sTree, gTrees)) {
             System.out.println("BUG found in " + opName + ". Incompatible trees " + when);
             System.out.println(Misc.allTreesAsText(sTree, gTrees));
-            System.exit(1);
-        }
+            throw new Error("Internal inconsistency. Exiting.");
+    }
     }
 
 

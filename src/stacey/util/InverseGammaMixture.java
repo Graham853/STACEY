@@ -22,6 +22,8 @@ package stacey.util;
 
 import beast.core.Description;
 
+import java.util.Arrays;
+
 @Description("Utility class for STACEY which implements a mixture of inverse gamma distributions.")
 // It only implements the way the inverse gammas are mixed; it is not a Distribution.
 public class InverseGammaMixture {
@@ -49,16 +51,16 @@ public class InverseGammaMixture {
 
 
     public double [] getWeights() {
-        return  weights;
+        return Arrays.copyOf(weights, weights.length);
     }
 
 
     public double[] getAlphas() {
-        return alphas;
+        return Arrays.copyOf(alphas, alphas.length);
     }
 
 
     public double[] getBetas() {
-        return betas;
+        return Arrays.copyOf(betas, betas.length);
     }
 }

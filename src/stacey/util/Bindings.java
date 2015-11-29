@@ -27,6 +27,7 @@ import beast.evolution.tree.TreeInterface;
 import beast.util.Randomizer;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Stack;
 
@@ -68,7 +69,7 @@ public class Bindings {
     // which are assigned to the stree (tip) node n
     // where 0 <= n < number of tips in stree j.
 
-    private static Bindings bindings = null;
+    private static volatile Bindings bindings = null;
 
 
     /************************* all clients call this before other methods ******************/
@@ -86,7 +87,11 @@ public class Bindings {
 
     // Used by FitsHeights
     public int [][] getGTipNrToSmcTipNr() {
-        return gTipNrToSmcTipNr;
+        int[][] tmp = new int[gTipNrToSmcTipNr.length][];
+        for (int j=0; j<gTipNrToSmcTipNr.length; j++) {
+            tmp[j] = Arrays.copyOf(gTipNrToSmcTipNr[j], gTipNrToSmcTipNr[j].length);
+        }
+        return tmp;
     }
 
 
@@ -181,18 +186,16 @@ public class Bindings {
         for (Node sTip : sTips) {
             if (sTip.getID().compareTo(smcTipID) == 0) {
                 if (tipNr != -1) {
-                    System.out.println("Error in smcTipNrFromGTipID() with taxon '" + gTipID + "'.\n" +
+                    throw new Error("Error in smcTipNrFromGTipID() with taxon '" + gTipID + "'.\n" +
                             "Assigned twice to SMC-tree tip number " + tipNr + ".");
-                    System.exit(1);
                 }
                 assert tipNr == -1;
                 tipNr = sTip.getNr();
             }
         }
         if (tipNr < 0) {
-            System.out.println("Error in smcTipNrFromGTipID() with taxon '" + gTipID + "'.\n" +
-            "Can't assign to SMC-tree tip number " + tipNr + ".");
-            System.exit(1);
+            throw new Error("Error in smcTipNrFromGTipID() with taxon '" + gTipID + "'.\n" +
+                    "Can't assign to SMC-tree tip number " + tipNr + ".");
         }
         assert tipNr >= 0;
         return tipNr;
@@ -207,9 +210,8 @@ public class Bindings {
                 String sgID = smc.taxonsetInput.get().get(gt).getID();
                 if (gTipID.compareTo(sgID) == 0) {
                     if (smcTipID.compareTo("") != 0) {
-                        System.out.println("Error in smcTipIDFromGTipID() with taxon '" + gTipID + "'.\n" +
+                        throw new Error("Error in smcTipIDFromGTipID() with taxon '" + gTipID + "'.\n" +
                                 "Assigned twice to SMC-tree tip '" + smcTipID + "'.");
-                        System.exit(1);
                     }
                     assert smcTipID.compareTo("") == 0;
                     smcTipID = smc.getID();
@@ -217,9 +219,8 @@ public class Bindings {
             }
         }
         if (smcTipID.compareTo("") == 0) {
-            System.out.println("Error in smcTipIDFromGTipID() with taxon '" + gTipID + "'.\n" +
+            throw new Error("Error in smcTipIDFromGTipID() with taxon '" + gTipID + "'.\n" +
                     "Can't assign to SMC-tree tip '" + smcTipID + "'.");
-            System.exit(1);
         }
         assert smcTipID.compareTo("") != 0;
         return smcTipID;

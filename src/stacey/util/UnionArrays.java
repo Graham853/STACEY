@@ -36,7 +36,7 @@ public class UnionArrays {
 
     private TreeInterface sTree;
     private List<Tree> gTrees;
-    private static UnionArrays unionArrays = null;
+    private static volatile UnionArrays unionArrays = null;
 
 
     public static UnionArrays initialise(TreeInterface sTree, List<Tree> gTrees, Bindings bindings) {

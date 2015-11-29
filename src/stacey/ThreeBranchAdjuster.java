@@ -1,3 +1,22 @@
+/*
+        Copyright (C) 2015 Graham Jones, www.indriid.com
+
+        This file is part of STACEY.
+
+        STACEY is free software: you can redistribute it and/or modify
+        it under the terms of the GNU General Public License as published by
+        the Free Software Foundation, either version 3 of the License, or
+        (at your option) any later version.
+
+        STACEY is distributed in the hope that it will be useful,
+        but WITHOUT ANY WARRANTY; without even the implied warranty of
+        MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+        GNU General Public License for more details.
+
+        You should have received a copy of the GNU General Public License
+        along with STACEY.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 package stacey;
 
 import beast.core.Input;
@@ -297,10 +316,7 @@ public class ThreeBranchAdjuster extends Operator {
     // sorts the coalescences on height
     private static final Comparator<Node> COALESCENCE_ORDER = new Comparator<Node>() {
         public int compare(Node a, Node b) {
-            if (a.getHeight() != b.getHeight()) {
-                return a.getHeight() < b.getHeight() ? -1 : 1;
-            }
-            return 0;
+            return Double.compare(a.getHeight(), b.getHeight());
         }
     };
 
