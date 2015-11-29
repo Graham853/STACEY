@@ -54,6 +54,12 @@ public class StaceyNodeReheight extends Operator {
             new Input<>("popSF",
                     "The population scaling factor for the STACEY coalescent", Input.Validate.REQUIRED);
 
+    public Input<Double> propUniformInput =
+            new Input<>("proportionUniform",
+                    "The fraction of times which the operator uses a uniform density for sampling new heights. " +
+                            "It must be between 0.0 and 1.0. " +
+                            "The rest of the time the operator uses a density skewed towards the maximum compatible height.", Input.Validate.REQUIRED);
+
     @SuppressWarnings({"CanBeFinal", "WeakerAccess"})
     public Input<Long> delayInput =
             new Input<>("delay",
@@ -67,7 +73,7 @@ public class StaceyNodeReheight extends Operator {
     private boolean sTreeTooSmall;
     private UnionArrays unionArrays;
 
-
+    private double propUniform;
 
     private final boolean debugFlag = Boolean.valueOf(System.getProperty("stacey.debug"));
     private int numberofdebugchecks = 0;
@@ -82,6 +88,10 @@ public class StaceyNodeReheight extends Operator {
         sTreeTooSmall = (sTree.getLeafNodeCount() < 3);
         if (delayInput.get() != null) {
             delay = delayInput.get().longValue();
+        }
+        propUniform = 0.1;
+        if (propUniformInput.get() != null) {
+            propUniform = propUniformInput.get().doubleValue();
         }
         Bindings bindings = Bindings.initialise(sTree, gTrees);
         unionArrays = UnionArrays.initialise(sTree, gTrees, bindings);
@@ -145,34 +155,37 @@ public class StaceyNodeReheight extends Operator {
 
         double newHeight;
         double logHR;
+        if (Randomizer.nextDouble() > propUniform) {
+            /*
+            Non-uniform sampling of new heights. NodeReheight is rarely accepted for a node when there
+            are large number of loci (unless the node has a very small height.) After burnin, only small
+            changes in heights will work. So seems here new heights are concentrated near the max.
+            This requires HRs to counter the bias of course, but should still help.
 
-        /* non-uniform sampling of new heights.
-        NodeReheight is rarely accepted when there are large number of loci, with a fixed species delimitation.
-        I think that's because after burnin, only small changes in heights will be accepted at all often.
-        Here, the new heights are concentrated near the max.
-        This requires HRs to counter the bias of course, but should still help.
-        */
-        /*
-        The cdf we're going to sample from is defined in [0,h] as
-        F(x) = (log(h+a) - log(h+a-x)) / (log(h+a)-log(a))
-        where h is maxHeight and a is hgtS = popSF / gTrees.size();
-        The inverse is
-        x = G(y) = h + a - exp(  log(h+a) (1-y)  +  log(a) y  )
-        The pdf is
-        f(x) = 1 / ( (log(h+a)-log(a)) (h+a-x) )
-        The median is G(.5) = h+a - sqrt(a(h+a))
-        Eg h = 0.001, a = 0.00001, G(.5) =  0.00101-sqrt(.00001*.00101) = 0.0009095
-        Eg h = 0.001, a = 0.0000001, G(.5) =  0.0010001-sqrt(.0000001*.0010001) = 0.0009900995
-        For large h/a, median ~= h(1 - 1/sqrt(h/a))
-         */
-        double popSF = popSFInput.get().getValue();
-        double hgtS = 0.1 * popSF / gTrees.size();
-        double oldHeight = fHeights[iNode];
-        newHeight = newHeightSample(maxHeight, hgtS);
-        double oldDensity = newHeightPDF(oldHeight, maxHeight, hgtS);
-        double newDensity = newHeightPDF(newHeight, maxHeight, hgtS);
-        logHR = Math.log(oldDensity / newDensity);
+            The cdf we're going to sample from is defined in [0,h] as
+            F(x) = (log(h+a) - log(h+a-x)) / (log(h+a)-log(a))
+            where h is maxHeight and a is hgtS = popSF / gTrees.size();
+            The inverse is
+            x = G(y) = h + a - exp(  log(h+a) (1-y)  +  log(a) y  )
+            The pdf is
+            f(x) = 1 / ( (log(h+a)-log(a)) (h+a-x) )
+            The median is G(.5) = h+a - sqrt(a(h+a))
+            Eg h = 0.001, a = 0.00001, G(.5) =  0.00101-sqrt(.00001*.00101) = 0.0009095
+            Eg h = 0.001, a = 0.0000001, G(.5) =  0.0010001-sqrt(.0000001*.0010001) = 0.0009900995
+            For large h/a, median ~= h(1 - 1/sqrt(h/a))
+            */
 
+            double popSF = popSFInput.get().getValue();
+            double hgtS = 0.1 * popSF / gTrees.size();
+            double oldHeight = fHeights[iNode];
+            newHeight = newHeightSample(maxHeight, hgtS);
+            double oldDensity = newHeightPDF(oldHeight, maxHeight, hgtS);
+            double newDensity = newHeightPDF(newHeight, maxHeight, hgtS);
+            logHR = Math.log(oldDensity/newDensity);
+        } else {
+            newHeight = Randomizer.nextDouble() * maxHeight;
+            logHR = 0.0;
+        }
         fHeights[iNode] = newHeight;
         sNodes[iReverseOrder[iNode]].setHeight(fHeights[iNode]);
         // reconstruct tree from heights
@@ -182,6 +195,9 @@ public class StaceyNodeReheight extends Operator {
         root.setParent(null);
         sTree.setRoot(root);
         return logHR;
+
+
+
     }
 
 
