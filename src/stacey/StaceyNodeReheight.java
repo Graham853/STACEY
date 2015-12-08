@@ -36,7 +36,7 @@ import stacey.util.UnionArrays;
 import java.util.*;
 
 @Description("Faster implementation of BEAST's NodeReheight move. " +
-        "It implements the method of Newton, Mau, and Larget (1999) on the SMC-tree while maintaining compatibuility with gene trees.")
+        "It implements the method of Newton, Mau, and Larget (1999) on the SMC-tree while maintaining compatibility with gene trees.")
 public class StaceyNodeReheight extends Operator {
 
     @SuppressWarnings({"CanBeFinal", "WeakerAccess"})
@@ -58,7 +58,7 @@ public class StaceyNodeReheight extends Operator {
             new Input<>("proportionUniform",
                     "The fraction of times which the operator uses a uniform density for sampling new heights. " +
                             "It must be between 0.0 and 1.0. " +
-                            "The rest of the time the operator uses a density skewed towards the maximum compatible height.", Input.Validate.REQUIRED);
+                            "The rest of the time the operator uses a density skewed towards the maximum compatible height.");
 
     @SuppressWarnings({"CanBeFinal", "WeakerAccess"})
     public Input<Long> delayInput =

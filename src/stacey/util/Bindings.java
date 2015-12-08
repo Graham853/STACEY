@@ -67,7 +67,7 @@ public class Bindings {
     private final int [][] nLinsForSmcTipNr;
     // nLinsForSmcTipNr[n][j] is the number of lineages from gene tree j
     // which are assigned to the stree (tip) node n
-    // where 0 <= n < number of tips in stree j.
+    // where 0 <= n < number of tips in stree.
 
     private static volatile Bindings bindings = null;
 
@@ -138,7 +138,9 @@ public class Bindings {
         nLinsForSmcTipNr = new int[nSTips][nGTrees];
         setUpTipMaps(sTree, gTrees);
         setUpTipNlineages(sTree, gTrees);
+        checkAllNlineagesNonZero(sTree, gTrees);
     }
+
 
     private void setUpTipNlineages(TreeInterface sTree, List<Tree> gTrees) {
         int nSTips = sTree.getLeafNodeCount();
@@ -156,6 +158,21 @@ public class Bindings {
         }
     }
 
+
+    private void checkAllNlineagesNonZero(TreeInterface sTree, List<Tree> gTrees) {
+        for (int STipNr = 0; STipNr < nLinsForSmcTipNr.length; STipNr++) {
+            for (int j = 0; j < nLinsForSmcTipNr[STipNr].length; j++) {
+                if (nLinsForSmcTipNr[STipNr][j] <= 0) {
+                    System.err.println("A species/minimal cluster has no sequences for at least one locus.");
+                    String sTipID = sTree.getNode(STipNr).getID();
+                    String alignmentID = null;
+                    alignmentID = gTrees.get(j).getTaxonset().alignmentInput.get().getID();
+                    String errMsg = "Species/minimal cluster '" + sTipID + "' has no sequences in alignment '" + alignmentID + "'.";
+                    throw new Error(errMsg);
+                }
+            }
+        }
+    }
 
 
     private void setUpTipMaps(TreeInterface sTree, List<Tree> gTrees) {
