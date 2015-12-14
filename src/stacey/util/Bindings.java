@@ -167,8 +167,8 @@ public class Bindings {
                     String sTipID = sTree.getNode(STipNr).getID();
                     String alignmentID = null;
                     alignmentID = gTrees.get(j).getTaxonset().alignmentInput.get().getID();
-                    String errMsg = "Species/minimal cluster '" + sTipID + "' has no sequences in alignment '" + alignmentID + "'.";
-                    throw new Error(errMsg);
+                    System.err.println("Species/minimal cluster '" + sTipID + "' has no sequences in alignment '" + alignmentID + "'.");
+                    throw new RuntimeException("Fatal STACEY error.");
                 }
             }
         }
@@ -203,16 +203,18 @@ public class Bindings {
         for (Node sTip : sTips) {
             if (sTip.getID().compareTo(smcTipID) == 0) {
                 if (tipNr != -1) {
-                    throw new Error("Error in smcTipNrFromGTipID() with taxon '" + gTipID + "'.\n" +
+                    System.err.println("Error in smcTipNrFromGTipID() with taxon '" + gTipID + "'.\n" +
                             "Assigned twice to SMC-tree tip number " + tipNr + ".");
+                    throw new RuntimeException("Fatal STACEY error.");
                 }
                 assert tipNr == -1;
                 tipNr = sTip.getNr();
             }
         }
         if (tipNr < 0) {
-            throw new Error("Error in smcTipNrFromGTipID() with taxon '" + gTipID + "'.\n" +
+            System.err.println("Error in smcTipNrFromGTipID() with taxon '" + gTipID + "'.\n" +
                     "Can't assign to SMC-tree tip number " + tipNr + ".");
+            throw new RuntimeException("Fatal STACEY error.");
         }
         assert tipNr >= 0;
         return tipNr;
@@ -227,8 +229,9 @@ public class Bindings {
                 String sgID = smc.taxonsetInput.get().get(gt).getID();
                 if (gTipID.compareTo(sgID) == 0) {
                     if (smcTipID.compareTo("") != 0) {
-                        throw new Error("Error in smcTipIDFromGTipID() with taxon '" + gTipID + "'.\n" +
+                        System.err.println("Error in smcTipIDFromGTipID() with taxon '" + gTipID + "'.\n" +
                                 "Assigned twice to SMC-tree tip '" + smcTipID + "'.");
+                        throw new RuntimeException("Fatal STACEY error.");
                     }
                     assert smcTipID.compareTo("") == 0;
                     smcTipID = smc.getID();
@@ -236,8 +239,9 @@ public class Bindings {
             }
         }
         if (smcTipID.compareTo("") == 0) {
-            throw new Error("Error in smcTipIDFromGTipID() with taxon '" + gTipID + "'.\n" +
+            System.err.println("Error in smcTipIDFromGTipID() with taxon '" + gTipID + "'.\n" +
                     "Can't assign to SMC-tree tip '" + smcTipID + "'.");
+            throw new RuntimeException("Fatal STACEY error.");
         }
         assert smcTipID.compareTo("") != 0;
         return smcTipID;

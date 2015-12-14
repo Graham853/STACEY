@@ -38,20 +38,20 @@ public class Checks {
         if (!Checks.treeIsOK(sTree)) {
             System.err.println("BUG found in " + opName + ". Bad sTree " + when);
             System.err.println(Misc.allTreesAsText(sTree, gTrees));
-            throw new Error("Internal inconsistency. Exiting.");
+            throw new RuntimeException("Fatal STACEY error.");
         }
         for (TreeInterface gTree : gTrees) {
             if (!Checks.treeIsOK(gTree)) {
-                System.out.println("BUG found in " + opName + ". Bad gTree " + when);
-                System.out.println(Misc.allTreesAsText(sTree, gTrees));
-                throw new Error("Internal inconsistency. Exiting.");
+                System.err.println("BUG found in " + opName + ". Bad gTree " + when);
+                System.err.println(Misc.allTreesAsText(sTree, gTrees));
+                throw new RuntimeException("Fatal STACEY error.");
             }
         }
         if (!Checks.compatible(sTree, gTrees)) {
-            System.out.println("BUG found in " + opName + ". Incompatible trees " + when);
-            System.out.println(Misc.allTreesAsText(sTree, gTrees));
-            throw new Error("Internal inconsistency. Exiting.");
-    }
+            System.err.println("BUG found in " + opName + ". Incompatible trees " + when);
+            System.err.println(Misc.allTreesAsText(sTree, gTrees));
+            throw new RuntimeException("Fatal STACEY error.");
+        }
     }
 
 

@@ -261,7 +261,9 @@ public class PIOMSCoalescentDistribution extends TreeDistribution {
             double robustLogP = logLhoodAllGeneTreesInSMCTree(getInverseGammaMixture(),
                     popPriorScale.get().getValue(), true);
             if (Math.abs(fastLogP - robustLogP) > 1e-12) {
-                throw new Error("BUG in calculateLogP() in PIOMSCoalescentDistribution");
+                System.err.println("BUG in calculateLogP() in PIOMSCoalescentDistribution");
+                throw new RuntimeException("Fatal STACEY error.");
+
             }
             numberofdebugchecks++;
         }
@@ -398,7 +400,8 @@ public class PIOMSCoalescentDistribution extends TreeDistribution {
                 if (debugFlag  &&  numberofdebugchecks < maxnumberofdebugchecks) {
                     // consistency check
                     if (gTreeFits[j] != fitsHeights.updateFitHeightsForOneGTree(j)) {
-                        throw new Error("BUG in logLhoodAllGeneTreesInSMCTree() gTreeFits[j] wrong");
+                        System.err.println("BUG in logLhoodAllGeneTreesInSMCTree() gTreeFits[j] wrong");
+                        throw new RuntimeException("Fatal STACEY error.");
                     }
                 }
             }

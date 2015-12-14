@@ -45,7 +45,7 @@ public class InverseGammaComponent extends BEASTObject {
     @SuppressWarnings({"CanBeFinal", "WeakerAccess"})
     public Input<RealParameter> beta =
             new Input<RealParameter>("beta",
-                    "rate parameter of an inverse gamma", Input.Validate.REQUIRED);
+                    "scale parameter of an inverse gamma", Input.Validate.REQUIRED);
 
     // inv gamma pdf is parameterized as  b^a/Gamma(a)  x^(-a-1)  exp(-b/x)
     // mean is b/(a-1) if a>1, var is  b^2/((a-1)^2 (a-2)) if a>2.

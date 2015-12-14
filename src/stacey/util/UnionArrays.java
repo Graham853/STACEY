@@ -27,7 +27,7 @@ import beast.evolution.tree.TreeInterface;
 import java.util.*;
 
 
-@Description("Imporatant utility class for STACEY, used by several operators. " +
+@Description("Important utility class for STACEY, used by several operators. " +
         "It adds a set of species (or minimal clusters) to every node in the SMC-tree and in all gene trees.")
 public class UnionArrays {
 
@@ -82,7 +82,7 @@ public class UnionArrays {
 
 
 
-    // for SPR move, maybe can avoid there
+    // for CoordinatedPruneRegraft move and debugging.
     public int nodeIndexOfUnionInSubSTree(Node node, BitUnion x) {
         if (node.isLeaf()) {
             return node.getNr();
