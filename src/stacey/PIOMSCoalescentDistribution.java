@@ -353,6 +353,12 @@ public class PIOMSCoalescentDistribution extends TreeDistribution {
     }
 
 
+    // For LineageRecombiner
+    double coalFactor(int j) {
+        return gTreeCFs.get(j).getCoalFactor();
+    }
+
+
     /***************************************************************************************************/
     /*******************************           private              ************************************/
     /***************************************************************************************************/

@@ -56,6 +56,12 @@ public class UnionArrays {
     }
 
 
+    public void updateSMCTreeAndGTree(int j) {
+        beastSubtreeToUnions(sUnions, sTree.getRoot());
+        beastSubtreeToUnions(gUnions[j], gTrees.get(j).getRoot());
+    }
+
+
 
     public void reset() {
         // needed?
@@ -81,9 +87,28 @@ public class UnionArrays {
 
 
 
-
     // for CoordinatedPruneRegraft move and debugging.
-    public int nodeIndexOfUnionInSubSTree(Node node, BitUnion x) {
+    public int nodeIndexOfUnionInSMCTree(BitUnion x) {
+        return nodeIndexOfUnionInSubSTree(sTree.getRoot(), x);
+    }
+
+
+    public int nodeIndexOfUnionAndHeightInSMCTree(BitUnion x, double height) {
+        int n = nodeIndexOfUnionInSMCTree(x);
+        assert sTree.getNode(n).getHeight() <= height;
+        Node hostS = sTree.getNode(n);
+        while (!hostS.isRoot()  &&  hostS.getParent().getHeight() < height) {
+            hostS = hostS.getParent();
+        }
+        return hostS.getNr();
+    }
+
+
+
+    /*******************************************************************************/
+
+
+    private int nodeIndexOfUnionInSubSTree(Node node, BitUnion x) {
         if (node.isLeaf()) {
             return node.getNr();
         }
@@ -99,7 +124,6 @@ public class UnionArrays {
     }
 
 
-    /*******************************************************************************/
 
 
     private UnionArrays(TreeInterface sTree, List<Tree> gTrees, Bindings bindings) {

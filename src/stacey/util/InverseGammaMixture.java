@@ -63,4 +63,16 @@ public class InverseGammaMixture {
     public double[] getBetas() {
         return Arrays.copyOf(betas, betas.length);
     }
+
+
+    // The mean can be infinite. Finding the mode or median of a mixture is awkward.
+    // This returns a value somewhere near the middle of the distribution, but not anything
+    // standard.
+    public double middlingValue() {
+        double mv = 0;
+        for (int i = 0; i < weights.length; i++) {
+            mv += weights[i] * betas[i] / alphas[i];
+        }
+        return mv;
+    }
 }

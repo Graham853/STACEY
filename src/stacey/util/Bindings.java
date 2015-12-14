@@ -84,14 +84,9 @@ public class Bindings {
 
     /***********************************  For logP  *********************************************************/
 
-
     // Used by FitsHeights
-    public int [][] getGTipNrToSmcTipNr() {
-        int[][] tmp = new int[gTipNrToSmcTipNr.length][];
-        for (int j=0; j<gTipNrToSmcTipNr.length; j++) {
-            tmp[j] = Arrays.copyOf(gTipNrToSmcTipNr[j], gTipNrToSmcTipNr[j].length);
-        }
-        return tmp;
+    public int smcTipNrFromGTreeTipNr(int j, int gTipNr) {
+        return gTipNrToSmcTipNr[j][gTipNr];
     }
 
 

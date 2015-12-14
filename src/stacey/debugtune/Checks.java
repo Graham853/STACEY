@@ -112,7 +112,7 @@ public class Checks {
             for (int i = 0; i < gTree.getNodeCount(); i++) {
                 BitUnion gUnion = unionArrays.gNodeUnion(j, i);
                 double gHeight = gTree.getNode(i).getHeight();
-                int n = unionArrays.nodeIndexOfUnionInSubSTree(sTree.getRoot(), gUnion);
+                int n = unionArrays.nodeIndexOfUnionInSMCTree(gUnion);
                 if (sTree.getNode(n).getHeight() > gHeight) {
                     return false;
                 }

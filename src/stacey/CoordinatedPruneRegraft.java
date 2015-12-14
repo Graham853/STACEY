@@ -275,8 +275,8 @@ public class CoordinatedPruneRegraft extends Operator {
         // update the smcTree and gene trees, find s and x in new smcTree
         unionArrays.reset();
         unionArrays.update();
-        int sNew = indexFromUnion(sUnion);
-        int xNew = indexFromUnion(xUnion);
+        int sNew = unionArrays.nodeIndexOfUnionInSMCTree(sUnion);
+        int xNew = unionArrays.nodeIndexOfUnionInSMCTree(xUnion);
         // calculate the reverse HR
         OpCPRinfoSMCTreeSpecification revsmi = makeSPRmoveInfo(sNew, xNew);
         logHR -= HRForAllCoordinatedSPRMoves(revsmi);
@@ -450,13 +450,6 @@ public class CoordinatedPruneRegraft extends Operator {
 
 
     /****************************** low level routines for SMC tree *************************/
-
-    // for finding indices of s and x after move so can calculate reverse HR
-    private int indexFromUnion(BitUnion union) {
-        return unionArrays.nodeIndexOfUnionInSubSTree(sTree.getRoot(), union);
-    }
-
-
 
 
     private int mrcaOfPair(int x, int y) {

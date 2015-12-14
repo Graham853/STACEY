@@ -38,7 +38,7 @@ public class FitsHeights {
     // heights.get(n).get(j) is an array of the coalescence heights from gtree j
     // which are inside stree branch n
 
-    private int [][] gTipNrToSmcTipNr;
+    private Bindings bindings;
 
     private int currentGTreeIndex;
     private TreeInterface sTree;
@@ -50,9 +50,9 @@ public class FitsHeights {
     /*************************************************************************/
 
     public FitsHeights(TreeInterface sTree, List<Tree> gTrees, Bindings bindings) {
+        this.bindings = bindings;
         this.sTree = sTree;
         this.gTrees = gTrees;
-        this.gTipNrToSmcTipNr = bindings.getGTipNrToSmcTipNr();
         initHeightArray(sTree, gTrees);
     }
 
@@ -98,7 +98,7 @@ public class FitsHeights {
         Node lftG = hereG.getChild(0);
         Node lftS;
         if (lftG.isLeaf()) {
-            lftS = sTree.getNode(gTipNrToSmcTipNr[currentGTreeIndex][lftG.getNr()]);
+            lftS = sTree.getNode(bindings.smcTipNrFromGTreeTipNr(currentGTreeIndex, lftG.getNr()));
         } else {
             lftS = makeHeightsSubtree(lftG);
             if (lftS == null) {
@@ -108,7 +108,7 @@ public class FitsHeights {
         Node rgtG = hereG.getChild(1);
         Node rgtS;
         if (rgtG.isLeaf()) {
-            rgtS = sTree.getNode(gTipNrToSmcTipNr[currentGTreeIndex][rgtG.getNr()]);
+            rgtS = sTree.getNode(bindings.smcTipNrFromGTreeTipNr(currentGTreeIndex, rgtG.getNr()));
         } else {
             rgtS = makeHeightsSubtree(rgtG);
             if (rgtS == null) {
@@ -117,14 +117,8 @@ public class FitsHeights {
         }
         while (lftS != rgtS) {
             if (lftS.getHeight() < rgtS.getHeight()) {
-                if (lftS.getParent() == null) {
-                    System.out.println("BUG in makeHeightsSubtree (lftS)");
-                }
                 lftS = lftS.getParent();
             } else {
-                if (rgtS.getParent() == null) {
-                    System.out.println("BUG in makeHeightsSubtree (rgtS)");
-                }
                 rgtS = rgtS.getParent();
             }
         }
