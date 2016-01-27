@@ -275,8 +275,8 @@ public class CoordinatedPruneRegraft extends Operator {
         // update the smcTree and gene trees, find s and x in new smcTree
         unionArrays.reset();
         unionArrays.update();
-        int sNew = unionArrays.nodeIndexOfUnionInSMCTree(sUnion);
-        int xNew = unionArrays.nodeIndexOfUnionInSMCTree(xUnion);
+        int sNew = unionArrays.smcTreeNodeNrOfUnion(sUnion);
+        int xNew = unionArrays.smcTreeNodeNrOfUnion(xUnion);
         // calculate the reverse HR
         OpCPRinfoSMCTreeSpecification revsmi = makeSPRmoveInfo(sNew, xNew);
         logHR -= HRForAllCoordinatedSPRMoves(revsmi);
@@ -290,6 +290,7 @@ public class CoordinatedPruneRegraft extends Operator {
     // This is log(number of choices) for the move.
     private double doAllCoordinatedSPRMoves(OpCPRinfoSMCTreeSpecification sppSPRInfo) {
         double logHR = 0;
+        // TODO-threaded
         for (int j = 0; j < gTrees.size(); j++) {
             logHR += doCoordinatedSPRMoves(j, sppSPRInfo);
         }
@@ -301,6 +302,7 @@ public class CoordinatedPruneRegraft extends Operator {
     // for the reverse move.
     private double HRForAllCoordinatedSPRMoves(OpCPRinfoSMCTreeSpecification sppSPRInfo) {
         double logHR = 0;
+        // TODO-threaded
         for (int j = 0; j < gTrees.size(); j++) {
             logHR += HRForCoordinatedSPRMoves(j, sppSPRInfo);
         }

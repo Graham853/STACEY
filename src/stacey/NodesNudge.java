@@ -258,6 +258,7 @@ public class NodesNudge extends Operator {
         OpNNinfoSMCNode nani = chooseNodeForNudge();
 
         // Collect all nodes in all gene tree that are to be nudged.
+        // TODO-threaded
         for (int j = 0; j < gTrees.size(); j++) {
             ArrayList<Node> pgtnodes = nodesToNudgeInGtree(j, nani, criterion);
             geneNodesToNudge.add(pgtnodes);
@@ -293,6 +294,7 @@ public class NodesNudge extends Operator {
         double [] interval = new double[2];
         interval[0] = -Double.MAX_VALUE;
         interval[1] = Double.MAX_VALUE;
+        // TODO-threaded
         for (int pgt = 0; pgt < gTrees.size(); pgt++) {
             double [] pgtint = getMaxNodesNudgeIntervalWithinOneGeneTree(toNudge.get(pgt));
             interval[0] = Math.max(interval[0], pgtint[0]);
@@ -393,6 +395,7 @@ public class NodesNudge extends Operator {
     // iterates over gene trees to change heights
     private double doNodesNudgeOnGeneTrees(double dh, ArrayList< ArrayList<Node>> toNudge) {
         double logHR = 0.0;
+        // TODO-threaded
         for (int j = 0; j < gTrees.size(); j++) {
             logHR += nudgeNodesInListBy(toNudge.get(j), dh);
         }

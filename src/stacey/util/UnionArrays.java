@@ -88,13 +88,14 @@ public class UnionArrays {
 
 
     // for CoordinatedPruneRegraft move and debugging.
-    public int nodeIndexOfUnionInSMCTree(BitUnion x) {
+    public int smcTreeNodeNrOfUnion(BitUnion x) {
         return nodeIndexOfUnionInSubSTree(sTree.getRoot(), x);
     }
 
 
-    public int nodeIndexOfUnionAndHeightInSMCTree(BitUnion x, double height) {
-        int n = nodeIndexOfUnionInSMCTree(x);
+    public int hostNodeNrOfGNode(int j, Node gnode) {
+        double height = gnode.getHeight();
+        int n = smcTreeNodeNrOfUnion(gNodeUnion(j, gnode.getNr()));
         assert sTree.getNode(n).getHeight() <= height;
         Node hostS = sTree.getNode(n);
         while (!hostS.isRoot()  &&  hostS.getParent().getHeight() < height) {

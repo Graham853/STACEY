@@ -264,6 +264,7 @@ public class StaceyNodeReheight extends Operator {
         // for each gene tree, get the straddlers, ie those nodes whose
         // set of species (or minimal clusters) overlaps both sppL and sppR
         double maxHeight = Double.POSITIVE_INFINITY;
+        // TODO-threaded
         for (int j = 0; j < gTrees.size(); j++) {
             ArrayList<Node> straddlers = unionArrays.getStraddlers(j, sppL, sppR);
             for (Node straddler : straddlers) {

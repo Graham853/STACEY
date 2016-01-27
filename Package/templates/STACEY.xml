@@ -434,7 +434,7 @@ added all stacey.*
                 <!--  Hyper-prior for population scale factor  -->
 
                 <!-- GRJ TODO this don't work, see above
-                <distribution id='popScalePrior' spec='beast.math.distributions.Prior' x='@popPriorScale'>
+                <distribution id='popScalePrior' spec='beast.math.distributions.Prior' x='@popPriorScaleInput'>
                     <LogNormal name="distr" id="LogNormal.popScale.smcTreePrior" >
                         <parameter name="M" id="mean.popScale.smcTreePrior" estimate="false" >-7</parameter>
                         <parameter name="S" id="sd.popScale.smcTreePrior" estimate="false" >2</parameter>
@@ -464,7 +464,7 @@ added all stacey.*
 	    <operator id='popPriorScaleScale.t:Species' spec='ScaleOperator' scaleFactor="0.75" weight="3" parameter="@popPriorScale"/>
 
         <!-- GRJ This was updown.all.Species. I use a range of un-optimised operators -->
-        <!-- GRJ YuleBirthrate becomes bdcGrowthRate. popMean becomes popPriorScale. popSize gone. originHeight.t:Species added. -->		
+        <!-- GRJ YuleBirthrate becomes bdcGrowthRate. popMean becomes popPriorScaleInput. popSize gone. originHeight.t:Species added. -->
 	    <operator id="updown.100.all.Species" spec='UpDownOperator' weight="2" scaleFactor="0.100" optimise="false">
             <up idref="bdcGrowthRate.t:Species"/>
             <down idref="popPriorScale"/>

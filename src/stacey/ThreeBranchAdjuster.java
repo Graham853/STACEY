@@ -36,6 +36,8 @@ import java.util.List;
 
 /**
  * Created by Graham Jones on 09/08/2015.
+ *
+ * Implementation of rubber-band operator from Yang and Rannala (2003)
  */
 public class ThreeBranchAdjuster extends Operator {
 
@@ -171,6 +173,7 @@ public class ThreeBranchAdjuster extends Operator {
         ArrayList<Node> gNodes = new ArrayList<>();
         ArrayList<Node> gLftNodes = new ArrayList<>();
         ArrayList<Node> gRgtNodes = new ArrayList<>();
+        // TODO-threaded -  the ArrayLists look tricky
         for (int j = 0; j <gTrees.size(); j++) {
             Tree gTree = gTrees.get(j);
             for (int i = gTree.getLeafNodeCount(); i < gTree.getNodeCount(); i++) {
@@ -192,7 +195,7 @@ public class ThreeBranchAdjuster extends Operator {
                 assert timesAdded <= 1;
             }
         }
-        if (orderBasedWeights) {
+        if (orderBasedWeights) { // TODO never used. Delete code?
             // in each branch, sort in height order
             gNodes.sort(COALESCENCE_ORDER);
             gLftNodes.sort(COALESCENCE_ORDER);
@@ -259,6 +262,7 @@ public class ThreeBranchAdjuster extends Operator {
 
     private double setNewGNodeHeightsFromSHeight(ArrayList<Node> nodes, double oldSH, double newSH, double limit) {
         double logHR = 0.0;
+        // TODO-threaded. Not good, too fine-grained
         for (int i = 0; i < nodes.size(); i++) {
             Node node = nodes.get(i);
             double oldGH = node.getHeight();

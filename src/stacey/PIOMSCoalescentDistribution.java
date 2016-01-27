@@ -121,8 +121,8 @@ public class PIOMSCoalescentDistribution extends TreeDistribution {
                     Input.Validate.REQUIRED);
 
     @SuppressWarnings({"CanBeFinal", "WeakerAccess"})
-    public Input<RealParameter> popPriorScale =
-            new Input<RealParameter>("popPriorScale",
+    public Input<RealParameter> popPriorScaleInput =
+            new Input<RealParameter>("popPriorScaleInput",
                     "Overall scale for population size",
                     Input.Validate.REQUIRED);
 
@@ -255,11 +255,11 @@ public class PIOMSCoalescentDistribution extends TreeDistribution {
         // Basically, this calls logLhoodAllGeneTreesInSMCTree(); the rest is debug checks
 
         double fastLogP = logLhoodAllGeneTreesInSMCTree(getInverseGammaMixture(),
-                popPriorScale.get().getValue(), false);
+                popPriorScaleInput.get().getValue(), false);
 
         if (debugFlag  &&  numberofdebugchecks < maxnumberofdebugchecks) {
             double robustLogP = logLhoodAllGeneTreesInSMCTree(getInverseGammaMixture(),
-                    popPriorScale.get().getValue(), true);
+                    popPriorScaleInput.get().getValue(), true);
             if (Math.abs(fastLogP - robustLogP) > 1e-12) {
                 System.err.println("BUG in calculateLogP() in PIOMSCoalescentDistribution");
                 throw new RuntimeException("Fatal STACEY error.");
@@ -363,32 +363,67 @@ public class PIOMSCoalescentDistribution extends TreeDistribution {
     /*******************************           private              ************************************/
     /***************************************************************************************************/
 
+
+
+    // TODO this is entirely untested
+    private double ThreadedLogP(InverseGammaMixture igm,
+                                double popPriorScale) {
+        ThreadedCalculator thcc = new ThreadedCalculator(4); // TODO call in initAndValidate() ?
+
+        // find max height of any gene tree for intensity at stree root
+        double maxgtreehgt = 0.0;
+        for (Tree gTree : gTrees) {
+            maxgtreehgt = Math.max(maxgtreehgt, gTree.getRoot().getHeight());
+        }
+
+        int [] q_j = new int[sTree.getNodeCount()];
+        double [] gamma_j = new double[sTree.getNodeCount()];
+        double [] minusLog_r_j = new double[sTree.getNodeCount()];
+        PIOMSCInfoForLogPCalc info =
+                new PIOMSCInfoForLogPCalc(fitsHeights, bindings, sTree, gTreeCFs, maxgtreehgt,
+                        gTreeFitIsDirty, gTreeFits, gTreeCountIntensityIsDirty,
+                        coalCounts, coalIntensities,
+                        q_j,  gamma_j, minusLog_r_j);
+        thcc.putAllGTreeLhoodInfosIntoSTree(info);
+        // threads done
+        // if incompatibility, return -oo
+        if (!thcc.getAllGtreesFit()) {
+            return Double.NEGATIVE_INFINITY;
+        }
+        double [] lambdas = igm.getWeights();
+        double [] alphas = igm.getAlphas();
+        double [] betas = igm.getBetas();
+        double [] logProbCpts = new double[lambdas.length];
+        double logPGS = 0.0;
+        for (int b = 0; b < sTree.getNodeCount(); b++) {
+            for (int c = 0; c < lambdas.length; c++) {
+                logProbCpts[c] = 0.0;
+                double sigmabeta_c = popPriorScale * betas[c];
+                logProbCpts[c] += Math.log(lambdas[c]);
+                logProbCpts[c] += alphas[c] * Math.log(sigmabeta_c);
+                logProbCpts[c] -= (alphas[c] + q_j[b]) * Math.log(sigmabeta_c + gamma_j[b]);
+                logProbCpts[c] += lnGammaRatiosTable[c][q_j[b]];
+            }
+            double logP_b = logSumExp(logProbCpts);
+            logP_b -= minusLog_r_j[b];
+            logPGS += logP_b;
+        }
+
+        assert !Double.isNaN(logPGS);
+        assert !Double.isInfinite(logPGS);
+        return logPGS;
+    }
+
+
+
+
     private double logLhoodAllGeneTreesInSMCTree(InverseGammaMixture igm,
                                                  double popPriorScale, boolean robust) {
-
         if (robust) {
             for (int j = 0; j < nGTrees; j++) {
                 gTreeFitIsDirty[j] = gTreeCountIntensityIsDirty[j] = true;
             }
         }
-
-        /*
-        if (debugFlag   &&  numberofdebugchecks < maxnumberofdebugchecks &&  !robust) {
-            if (numberofdebugchecks < 10  ||  numberofdebugchecks == 52 ||
-                    (numberofdebugchecks < 100  &&  numberofdebugchecks % 10 == 0)  ||
-                    (numberofdebugchecks < 1000  &&  numberofdebugchecks % 100 == 0) ||
-                    (numberofdebugchecks < 10000  &&  numberofdebugchecks % 1000 == 0) ||
-                    (numberofdebugchecks % 100000 == 0)) {
-                System.out.println("numberofdebugchecks = " + numberofdebugchecks);
-                System.out.println(Misc.beastSubtreeAsTextWithHeader(sTree.getRoot(), null));
-                for (int j = 0; j < gTrees.size(); j++) {
-                    System.out.println(Misc.beastSubtreeAsTextWithHeader(gTrees.get(j).getRoot(), null));
-                }
-                System.out.println("");
-                System.out.flush();
-            }
-        }*/
-        
         // unless gtree fit is clean and the gtree fits, CountIntensity dirtyness may be wrong
         for (int j = 0; j < nGTrees; j++) {
             if (gTreeFitIsDirty[j]  ||  !gTreeFits[j]) {
@@ -397,6 +432,7 @@ public class PIOMSCoalescentDistribution extends TreeDistribution {
         }
         // make gTreeFits up to date
         boolean allGtreesFit = true;
+        //TODO-threaded. allGtreesFit looks awkward. Better to always update all gTreeFits[] ?
         for (int j = 0; j < nGTrees  &&  allGtreesFit; j++) {
             if (gTreeFitIsDirty[j]) {
                 gTreeFits[j] = fitsHeights.updateFitHeightsForOneGTree(j);
@@ -422,6 +458,7 @@ public class PIOMSCoalescentDistribution extends TreeDistribution {
             maxgtreehgt = Math.max(maxgtreehgt, gTree.getRoot().getHeight());
         }
         // make Nlineages and coal counts and intensities up to date
+        //TODO-threaded
         for (int j = 0; j < nGTrees; j++) {
             if (gTreeCountIntensityIsDirty[j]) {
                 // counts
@@ -475,27 +512,7 @@ public class PIOMSCoalescentDistribution extends TreeDistribution {
                     }
                     coalIntensity /= coalFactor;
                     coalIntensities[n][j] = coalIntensity;
-                    // old calc
-                    /*if (nCoals == 0) {
-                        coalIntensities[n][j] = (ancHeight - nodeHeight) * nLins[n] * (nLins[n] - 1) * 0.5 / coalFactor;
-                    } else if (nCoals == 1) {
-                        double gammanj = (njHeights.get(0) - nodeHeight) * nLins[n] * (nLins[n] - 1) * 0.5;
-                        gammanj += (ancHeight - njHeights.get(nCoals-1)) * (nLins[n] - nCoals) * (nLins[n] - nCoals - 1) * 0.5;
-                        coalIntensities[n][j] = gammanj / coalFactor;
-                    } else {
-                        njHeights.sort(null);
-                        double gammanj = (njHeights.get(0) - nodeHeight) * nLins[n] * (nLins[n] - 1) * 0.5;
-                        for (int h = 1; h < nCoals; h++) {
-                            gammanj += (njHeights.get(h) - njHeights.get(h-1)) * (nLins[n] - h) * (nLins[n] - h - 1) * 0.5;
-                        }
-                        gammanj += (ancHeight - njHeights.get(nCoals-1)) * (nLins[n] - nCoals) * (nLins[n] - nCoals - 1) * 0.5;
-                        coalIntensities[n][j] = gammanj / coalFactor;
-                    }
-                    // check
-                    if (coalIntensities[n][j] != coalIntensity) {
-                        System.out.println("BUG in logLhoodAllGeneTreesInSMCTree() check coalIntensity failed");
-                    }
-                    assert coalIntensities[n][j] == coalIntensity;*/                }
+                }
                 gTreeCountIntensityIsDirty[j] = false;
             }
         }
@@ -538,7 +555,12 @@ public class PIOMSCoalescentDistribution extends TreeDistribution {
         for (int j =0; j < nGTrees; j++) {
             logCFs[j] = Math.log(gTreeCFs.get(j).getCoalFactor());
         }
-        
+        double [] lambdas = igm.getWeights();
+        double [] alphas = igm.getAlphas();
+        double [] betas = igm.getBetas();
+        double [] logProbCpts = new double[lambdas.length];
+
+        //TODO-threaded looks OK except for accumulating logP
         for (int n = 0; n < nSMCTreeNodes; n++) {
             int q_b = 0;
             double gamma_b = 0.0;
@@ -548,11 +570,6 @@ public class PIOMSCoalescentDistribution extends TreeDistribution {
                 minusLog_r_b += logCFs[j] * coalCounts[n][j];
                 gamma_b += coalIntensities[n][j];
             }
-            double [] lambdas = igm.getWeights();
-            double [] alphas = igm.getAlphas();
-            double [] betas = igm.getBetas();
-            double [] logProbCpts = new double[lambdas.length];
-
             for (int c = 0; c < lambdas.length; c++) {
                 logProbCpts[c] = 0.0;
                 double sigmabeta_c = popPriorScale * betas[c];
@@ -592,5 +609,20 @@ public class PIOMSCoalescentDistribution extends TreeDistribution {
         }
         return maxx + Math.log(sum);
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 }

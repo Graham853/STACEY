@@ -23,10 +23,8 @@ package stacey.debugtune;
 import beast.evolution.tree.Node;
 import beast.evolution.tree.Tree;
 import beast.evolution.tree.TreeInterface;
-import stacey.GtreeAndCoalFactor;
 import stacey.util.*;
 
-import java.util.ArrayList;
 import java.util.List;
 
 
@@ -112,7 +110,7 @@ public class Checks {
             for (int i = 0; i < gTree.getNodeCount(); i++) {
                 BitUnion gUnion = unionArrays.gNodeUnion(j, i);
                 double gHeight = gTree.getNode(i).getHeight();
-                int n = unionArrays.nodeIndexOfUnionInSMCTree(gUnion);
+                int n = unionArrays.smcTreeNodeNrOfUnion(gUnion);
                 if (sTree.getNode(n).getHeight() > gHeight) {
                     return false;
                 }

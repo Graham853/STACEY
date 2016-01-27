@@ -210,6 +210,7 @@ public class FocusedNodeHeightScaler extends Operator {
         for (int n = 0; n < sTreeDistances.length; n++) {
             sTreeWeights[n] = distanceToWeight(sTreeDistances[n], rootDistance);
         }
+        // TODO-threaded
         for (int j = 0; j < gTrees.size(); j++) {
             int [] jDistances =  gTreeDistances[j];
             double [] jLogHeights = gTreeLogHeights[j];
@@ -229,6 +230,7 @@ public class FocusedNodeHeightScaler extends Operator {
         interval[1] = Double.POSITIVE_INFINITY;
         getSTreeFSBounds(interval, sTreeLogHeights, sTreeWeights);
         OpFSinfoSMCNode[] fsNodeInfos = getAllInternalFSMoveSNInfos(sTreeLogHeights, sTreeWeights);
+        // TODO-threaded
         for (int j = 0; j < gTrees.size(); j++) {
             double [] jLogHeights = gTreeLogHeights[j];
             double [] jWeights = gTreeWeights[j];
@@ -244,6 +246,7 @@ public class FocusedNodeHeightScaler extends Operator {
         double nearlyOne = 0.99999999;  // to avoid numerical errors which might make a branch slightly negative
         double logSF = Randomizer.uniform(nearlyOne*interval[0], nearlyOne*interval[1]);
         logHR += fsMoveDoScale(sTree, logSF, sTreeWeights);
+        // TODO-threaded
         for (int j = 0; j < gTrees.size(); j++) {
             double [] jWeights = gTreeWeights[j];
             logHR += fsMoveDoScale(gTrees.get(j), logSF, jWeights);

@@ -50,7 +50,7 @@ public class GtreeAndCoalFactor extends CalculationNode {
         return gtree.get();
     }
 
-    double getCoalFactor() {
+    public double getCoalFactor() {
         return coalFactor.get();
     }
 }
