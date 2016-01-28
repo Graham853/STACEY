@@ -365,54 +365,6 @@ public class PIOMSCoalescentDistribution extends TreeDistribution {
 
 
 
-    // TODO this is entirely untested
-    private double ThreadedLogP(InverseGammaMixture igm,
-                                double popPriorScale) {
-        ThreadedCalculator thcc = new ThreadedCalculator(4); // TODO call in initAndValidate() ?
-
-        // find max height of any gene tree for intensity at stree root
-        double maxgtreehgt = 0.0;
-        for (Tree gTree : gTrees) {
-            maxgtreehgt = Math.max(maxgtreehgt, gTree.getRoot().getHeight());
-        }
-
-        int [] q_j = new int[sTree.getNodeCount()];
-        double [] gamma_j = new double[sTree.getNodeCount()];
-        double [] minusLog_r_j = new double[sTree.getNodeCount()];
-        PIOMSCInfoForLogPCalc info =
-                new PIOMSCInfoForLogPCalc(fitsHeights, bindings, sTree, gTreeCFs, maxgtreehgt,
-                        gTreeFitIsDirty, gTreeFits, gTreeCountIntensityIsDirty,
-                        coalCounts, coalIntensities,
-                        q_j,  gamma_j, minusLog_r_j);
-        thcc.putAllGTreeLhoodInfosIntoSTree(info);
-        // threads done
-        // if incompatibility, return -oo
-        if (!thcc.getAllGtreesFit()) {
-            return Double.NEGATIVE_INFINITY;
-        }
-        double [] lambdas = igm.getWeights();
-        double [] alphas = igm.getAlphas();
-        double [] betas = igm.getBetas();
-        double [] logProbCpts = new double[lambdas.length];
-        double logPGS = 0.0;
-        for (int b = 0; b < sTree.getNodeCount(); b++) {
-            for (int c = 0; c < lambdas.length; c++) {
-                logProbCpts[c] = 0.0;
-                double sigmabeta_c = popPriorScale * betas[c];
-                logProbCpts[c] += Math.log(lambdas[c]);
-                logProbCpts[c] += alphas[c] * Math.log(sigmabeta_c);
-                logProbCpts[c] -= (alphas[c] + q_j[b]) * Math.log(sigmabeta_c + gamma_j[b]);
-                logProbCpts[c] += lnGammaRatiosTable[c][q_j[b]];
-            }
-            double logP_b = logSumExp(logProbCpts);
-            logP_b -= minusLog_r_j[b];
-            logPGS += logP_b;
-        }
-
-        assert !Double.isNaN(logPGS);
-        assert !Double.isInfinite(logPGS);
-        return logPGS;
-    }
 
 
 
