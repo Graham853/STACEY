@@ -133,12 +133,14 @@ public class BirthDeathCollapseModel extends SpeciesTreeDistribution {
 
 
     // provided to help avoid inconsistent treatment of h == collapseHeight
-    public static boolean belowCollapseHeight(double h) {
+    static boolean belowCollapseHeight(double h) {
         return (h < collapseHeight.get());
     }
 
 
-
+   static public double collapseHeight() {
+        return collapseHeight.get().doubleValue();
+    }
 
 
     private double originHeightLogLikelihood(double t, double a, double b, double w, int n) {

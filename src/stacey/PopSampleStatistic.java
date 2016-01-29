@@ -40,7 +40,7 @@ import static beast.util.Randomizer.randomChoicePDF;
 public class PopSampleStatistic extends BEASTObject implements Loggable {
     @SuppressWarnings({"CanBeFinal", "WeakerAccess"})
     public Input<RealParameter> popPriorScaleInput =
-            new Input<RealParameter>("popPriorScaleInput",
+            new Input<RealParameter>("popPriorScale",
                     "Overall scale for population size",
                     Input.Validate.REQUIRED);
 

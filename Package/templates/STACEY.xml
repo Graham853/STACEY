@@ -459,7 +459,7 @@ added all stacey.*
         <operator id="NodesNudge.t:Species"              spec="stacey.NodesNudge"              smcTree="@Tree.t:Species" weight="20"/>
         <operator id="FocusedNodeHeightScaler.t:Species" spec="stacey.FocusedNodeHeightScaler" smcTree="@Tree.t:Species" weight="20"/>
         <operator id="CoordinatedPruneRegraft.t:Species" spec="stacey.CoordinatedPruneRegraft" smcTree="@Tree.t:Species" weight="20"/>
-        <operator id="ThreeBranchAdjuster.t:Species"     spec="stacey.ThreeBranchAdjuster"     smcTree="@Tree.t:Species" weight="20" popSF="@popPriorScale"/>
+        <operator id="ThreeBranchAdjuster.t:Species"     spec="stacey.ThreeBranchAdjuster"     smcTree="@Tree.t:Species" weight="20" collapseWeight="@collapseWeight.t:Species" popSF="@popPriorScale"/>
 
 	    <operator id='popPriorScaleScale.t:Species' spec='ScaleOperator' scaleFactor="0.75" weight="3" parameter="@popPriorScale"/>
 

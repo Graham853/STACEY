@@ -122,7 +122,7 @@ public class PIOMSCoalescentDistribution extends TreeDistribution {
 
     @SuppressWarnings({"CanBeFinal", "WeakerAccess"})
     public Input<RealParameter> popPriorScaleInput =
-            new Input<RealParameter>("popPriorScaleInput",
+            new Input<RealParameter>("popPriorScale",
                     "Overall scale for population size",
                     Input.Validate.REQUIRED);
 

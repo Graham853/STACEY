@@ -29,10 +29,13 @@ import stacey.debugtune.Checks;
 import stacey.util.Bindings;
 import stacey.util.BitUnion;
 import stacey.util.UnionArrays;
+import stacey.BirthDeathCollapseModel;
 
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+
+import static stacey.BirthDeathCollapseModel.belowCollapseHeight;
 
 /**
  * Created by Graham Jones on 09/08/2015.
@@ -57,19 +60,14 @@ public class ThreeBranchAdjuster extends Operator {
             new Input<>("popSF",
                     "The population scaling factor for the STACEY coalescent", Input.Validate.REQUIRED);
 
+
+    public Input<RealParameter> collapseWeightInput =
+            new Input<>("collapseWeight", "The collapse weight", Input.Validate.REQUIRED);
+
     @SuppressWarnings({"CanBeFinal", "WeakerAccess"})
     public Input<Long> delayInput =
             new Input<>("delay",
                     "Number of times the operator is disabled.");
-
-    public enum GtreeNodeCriterion {
-        MIXED_WITH_PURE_CHILDREN,
-        MIXED_WITH_A_PURE_CHILD,
-        MIXED
-    }
-    private final static double [] gtreeNodeCriterionWeights = {1,1,1};
-
-
 
     private Tree sTree;
     private List<Tree> gTrees;
@@ -140,8 +138,6 @@ public class ThreeBranchAdjuster extends Operator {
         for (int j = 0; j < gTrees.size(); j++) {
             gTrees.get(j).startEditing(null);
         }
-
-        boolean orderBasedWeights = false;
         // choose sTree node
         int sNodeNr;
         do {
@@ -195,55 +191,17 @@ public class ThreeBranchAdjuster extends Operator {
                 assert timesAdded <= 1;
             }
         }
-        if (orderBasedWeights) { // TODO never used. Delete code?
-            // in each branch, sort in height order
-            gNodes.sort(COALESCENCE_ORDER);
-            gLftNodes.sort(COALESCENCE_ORDER);
-            gRgtNodes.sort(COALESCENCE_ORDER);
-            // make weights which will preserve order
-            ArrayList<Double> weights = new ArrayList<>(gNodes.size() + 2);
-            ArrayList<Double> lftWeights = new ArrayList<>(gNodes.size() + 2);
-            ArrayList<Double> rgtWeights = new ArrayList<>(gNodes.size() + 2);
-            // weights for the branch of sNode, from 1 for sNode down to zero for its parent
-            weights.add(1.0);
-            double gNodesSize = gNodes.size();
-            for (int c = 0; c < gNodes.size(); c++) {
-                weights.add((gNodesSize-c) / (gNodesSize+1.0));
-            }
-            weights.add(0.0);
-            // weights for the left branch of sNode, from 0 at left child up to 1 at sNode
-            lftWeights.add(0.0);
-            double gLftNodesSize = gLftNodes.size();
-            for (int c = 0; c < gLftNodes.size(); c++) {
-                lftWeights.add((c+1.0) / (gLftNodesSize+1.0));
-            }
-            lftWeights.add(1.0);
-            // weights for the right branch of sNode, from 0 at right child up to 1 at sNode
-            rgtWeights.add(0.0);
-            double gRgtNodesSize = gRgtNodes.size();
-            for (int c = 0; c < gRgtNodes.size(); c++) {
-                rgtWeights.add((c+1.0) / (gRgtNodesSize+1.0));
-            }
-            rgtWeights.add(1.0);
-            // find bounds
-            double [] interval = new double[2];
-            interval[0] = Double.NEGATIVE_INFINITY;
-            interval[1] = Double.POSITIVE_INFINITY;
-            updateBoundsFromArrays(interval, sHeight, gNodes, sAncHeight, weights);
-            updateBoundsFromArrays(interval, sLftHeight, gLftNodes, sHeight, lftWeights);
-            updateBoundsFromArrays(interval, sRgtHeight, gRgtNodes, sHeight, rgtWeights);
-            // choose size of move
-            double eta = Randomizer.uniform(interval[0], interval[1]);
-            // do the move
-            sNode.setHeight(sNode.getHeight() + weights.get(0) * eta);
-            setNewGNodeHeightsFromWeights(gNodes, weights, eta);
-            setNewGNodeHeightsFromWeights(gLftNodes, lftWeights, eta);
-            setNewGNodeHeightsFromWeights(gRgtNodes, rgtWeights, eta);
-        } else {
-            double minSH = Math.max(sLftHeight, sRgtHeight);
-            double maxSH = sAncHeight;
-            double popSF = popSFInput.get().getValue();
-            double hgtRange = Math.min(40.0 * popSF / gTrees.size(), 0.5*(maxSH - minSH));
+        double minSH = Math.max(sLftHeight, sRgtHeight);
+        double maxSH = sAncHeight;
+        double popSF = popSFInput.get().getValue();
+        double hgtRange = Math.min(40.0 * popSF / gTrees.size(), 0.5*(maxSH - minSH));
+
+        double eps = BirthDeathCollapseModel.collapseHeight();
+        double gap = eps - minSH;
+        if (Double.compare(collapseWeightInput.get().getValue(), 0.0) == 0  ||
+                gap <= 1e-8  ||
+                maxSH - minSH <= 3.0 * gap) {
+            // normal case
             double newHeight = sHeight + Randomizer.uniform(-hgtRange, hgtRange);
             if (newHeight < minSH) {
                 newHeight = 2 * minSH - newHeight;
@@ -254,10 +212,52 @@ public class ThreeBranchAdjuster extends Operator {
             logHR += setNewGNodeHeightsFromSHeight(gNodes,    sHeight, newHeight, sAncHeight);
             logHR += setNewGNodeHeightsFromSHeight(gLftNodes, sHeight, newHeight, sLftHeight);
             logHR += setNewGNodeHeightsFromSHeight(gRgtNodes, sHeight, newHeight, sRgtHeight);
+        } else {
+            // doing species delimitation with oldest child 'sensibly' below collapse height
+            // and enough room above (maxSH big enough) that the non-uniform sampling is sensible
+            // The PDF has support [minSH, maxSH] and in this range is
+            //  f(x) = [log(maxSH - minSH + delta) - log(delta)]^-1  /  (x - minSH + delta)
+            //  The CDF is
+            //  F(x) = [log(maxSH - minSH + delta) - log(delta)]^-1  *  [log(x - minSH + delta) - log(delta)]
+            // The inverse CDF is
+            // G(y) = minSH - delta + exp{  y * [log(maxSH - minSH + delta] - log(delta)) + log(delta)  }
+
+            assert gap > 1e-8;
+            double delta = gap*gap / (maxSH - minSH - 2*gap);
+            assert delta > 0.0;
+            double newHeight = newHeightSample(minSH, maxSH, delta);
+            double oldDensity = newHeightPDF(sHeight, minSH, maxSH, delta);
+            double newDensity = newHeightPDF(newHeight, minSH, maxSH, delta);
+            logHR = Math.log(oldDensity/newDensity);
+            sNode.setHeight(newHeight);
+            logHR += setNewGNodeHeightsFromSHeight(gNodes,    sHeight, newHeight, sAncHeight);
+            logHR += setNewGNodeHeightsFromSHeight(gLftNodes, sHeight, newHeight, sLftHeight);
+            logHR += setNewGNodeHeightsFromSHeight(gRgtNodes, sHeight, newHeight, sRgtHeight);
         }
         return logHR;
     }
 
+
+
+
+    private double newHeightPDF(double h, double minSH, double maxSH, double delta) {
+        double d = 1.0 / (Math.log(maxSH - minSH + delta) - Math.log(delta));
+        d /=  (h - minSH + delta);
+        return d;
+    }
+
+
+    private double newHeightSample(double minSH, double maxSH, double delta) {
+        double y = Randomizer.nextDouble();
+
+        double q = minSH - delta +
+                Math.exp(  y * (Math.log(maxSH - minSH + delta) - Math.log(delta))+ Math.log(delta)  );
+        assert q >= minSH - 1e-12;
+        assert q <= maxSH + 1e-12;
+        q = Math.max(q, minSH);
+        q = Math.min(q, maxSH);
+        return q;
+    }
 
 
     private double setNewGNodeHeightsFromSHeight(ArrayList<Node> nodes, double oldSH, double newSH, double limit) {
