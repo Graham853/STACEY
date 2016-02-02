@@ -132,7 +132,7 @@ public class CoordinatedPruneRegraft extends Operator {
         sTree = smcTreeInput.get();
         gTrees = geneTreesInput.get();
         sTreeTooSmall = (sTree.getLeafNodeCount() < 3);
-        if (delayInput.get() != null) {
+        if (delayInput != null  &&  delayInput.get() != null) {
             delay = delayInput.get().longValue();
         }
         bindings = Bindings.initialise(sTree, gTrees);

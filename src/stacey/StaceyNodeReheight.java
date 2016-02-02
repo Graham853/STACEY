@@ -61,6 +61,13 @@ public class StaceyNodeReheight extends Operator {
                             "The rest of the time the operator uses a density skewed towards the maximum compatible height.");
 
     @SuppressWarnings({"CanBeFinal", "WeakerAccess"})
+    public Input<Double> tuningInput =
+            new Input<>("tuning",
+                    "A tuning parameter. The default is 1.0, and allowed values are positive numbers. " +
+                            "Larger values make bigger jumps and so decrease the acceptance ratio. " +
+                            "Experiments in the range [0.1,10.0] seem sensible.");
+
+    @SuppressWarnings({"CanBeFinal", "WeakerAccess"})
     public Input<Long> delayInput =
             new Input<>("delay",
                     "Number of times the operator is disabled.");
@@ -68,12 +75,13 @@ public class StaceyNodeReheight extends Operator {
 
     private Tree sTree;
     private List<Tree> gTrees;
-    private long delay = 0;
-    private int callCount = 0;
+     private int callCount = 0;
     private boolean sTreeTooSmall;
     private UnionArrays unionArrays;
 
-    private double propUniform;
+    private double propUniform = 0.1;
+    private double tuning = 1.0;
+    private long delay = 0;
 
     private final boolean debugFlag = Boolean.valueOf(System.getProperty("stacey.debug"));
     private int numberofdebugchecks = 0;
@@ -86,11 +94,11 @@ public class StaceyNodeReheight extends Operator {
         sTree = smcTreeInput.get();
         gTrees = geneTreesInput.get();
         sTreeTooSmall = (sTree.getLeafNodeCount() < 3);
-        if (delayInput.get() != null) {
+        if (delayInput != null  &&  delayInput.get() != null) {
             delay = delayInput.get().longValue();
         }
         propUniform = 0.1;
-        if (propUniformInput.get() != null) {
+        if (propUniformInput != null  &&  propUniformInput.get() != null) {
             propUniform = propUniformInput.get().doubleValue();
         }
         Bindings bindings = Bindings.initialise(sTree, gTrees);
@@ -163,24 +171,29 @@ public class StaceyNodeReheight extends Operator {
             This requires HRs to counter the bias of course, but should still help.
 
             The cdf we're going to sample from is defined in [0,h] as
-            F(x) = (log(h+a) - log(h+a-x)) / (log(h+a)-log(a))
-            where h is maxHeight and a is hgtS = popSF / gTrees.size();
+            F(x) = (log(h+s) - log(h+s-x)) / (log(h+s)-log(s))
+            where h (maxHeight in code) and s (hgtOffset in code)is an adjustable parameter
+            proportional to popSF / gTrees.size();
             The inverse is
-            x = G(y) = h + a - exp(  log(h+a) (1-y)  +  log(a) y  )
+            x = G(y) = h + s - exp(  log(h+s) (1-y)  +  log(s) y  )
             The pdf is
-            f(x) = 1 / ( (log(h+a)-log(a)) (h+a-x) )
-            The median is G(.5) = h+a - sqrt(a(h+a))
-            Eg h = 0.001, a = 0.00001, G(.5) =  0.00101-sqrt(.00001*.00101) = 0.0009095
-            Eg h = 0.001, a = 0.0000001, G(.5) =  0.0010001-sqrt(.0000001*.0010001) = 0.0009900995
-            For large h/a, median ~= h(1 - 1/sqrt(h/a))
+            f(x) = 1 / ( (log(h+s)-log(s)) (h+s-x) )
+            The median is G(.5) = h+s - sqrt(s(h+s))
+            Eg h = 0.001, s = 0.00001, G(.5) =  0.00101-sqrt(.00001*.00101) = 0.0009095
+            Eg h = 0.001, s = 0.0000001, G(.5) =  0.0010001-sqrt(.0000001*.0010001) = 0.0009900995
+            For large h/s, median ~= h(1 - 1/sqrt(h/s))
             */
 
             double popSF = popSFInput.get().getValue();
-            double hgtS = 0.1 * popSF / gTrees.size();
+
+            if (tuningInput != null  &&  tuningInput.get() != null) {
+                tuning =  tuningInput.get().doubleValue();
+            }
+            double hgtOffset = tuning * 0.1 * popSF / gTrees.size();
             double oldHeight = fHeights[iNode];
-            newHeight = newHeightSample(maxHeight, hgtS);
-            double oldDensity = newHeightPDF(oldHeight, maxHeight, hgtS);
-            double newDensity = newHeightPDF(newHeight, maxHeight, hgtS);
+            newHeight = newHeightSample(maxHeight, hgtOffset);
+            double oldDensity = newHeightPDF(oldHeight, maxHeight, hgtOffset);
+            double newDensity = newHeightPDF(newHeight, maxHeight, hgtOffset);
             logHR = Math.log(oldDensity/newDensity);
         } else {
             newHeight = Randomizer.nextDouble() * maxHeight;

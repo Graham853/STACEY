@@ -17,7 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by Work on 14/12/2015.
+ * Created  by Work on 14/12/2015.
  */
 public class LineageRecombiner extends Operator {
 
@@ -118,7 +118,7 @@ public class LineageRecombiner extends Operator {
         sTree = smcTreeInput.get();
         gTrees = geneTreesInput.get();
         sTreeTooSmall = (sTree.getLeafNodeCount() < 3);
-        if (delayInput.get() != null) {
+        if (delayInput != null  &&  delayInput.get() != null) {
             delay = delayInput.get().longValue();
         }
         bindings = Bindings.initialise(sTree, gTrees);

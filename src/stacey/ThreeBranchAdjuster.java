@@ -19,6 +19,7 @@
 
 package stacey;
 
+import beast.core.Description;
 import beast.core.Input;
 import beast.core.Operator;
 import beast.core.parameter.RealParameter;
@@ -40,8 +41,11 @@ import static stacey.BirthDeathCollapseModel.belowCollapseHeight;
 /**
  * Created by Graham Jones on 09/08/2015.
  *
- * Implementation of rubber-band operator from Yang and Rannala (2003)
+ *
  */
+
+@Description("An implementation of the rubber-band operator from Yang and Rannala (2003)." +
+             "It changes the height of a SMC-tree node, and all gene tree nodes in the three adjacent branches.")
 public class ThreeBranchAdjuster extends Operator {
 
 
@@ -60,9 +64,12 @@ public class ThreeBranchAdjuster extends Operator {
             new Input<>("popSF",
                     "The population scaling factor for the STACEY coalescent", Input.Validate.REQUIRED);
 
-
-    public Input<RealParameter> collapseWeightInput =
-            new Input<>("collapseWeight", "The collapse weight", Input.Validate.REQUIRED);
+    @SuppressWarnings({"CanBeFinal", "WeakerAccess"})
+    public Input<Double> tuningInput =
+            new Input<>("tuning",
+                    "A tuning parameter. The default is 1.0, and allowed values are positive numbers. " +
+                    "Larger values make bigger jumps and so decrease the acceptance ratio. " +
+                            "Experiments in the range [0.1,10.0] seem sensible.");
 
     @SuppressWarnings({"CanBeFinal", "WeakerAccess"})
     public Input<Long> delayInput =
@@ -71,9 +78,12 @@ public class ThreeBranchAdjuster extends Operator {
 
     private Tree sTree;
     private List<Tree> gTrees;
-    private long delay = 0;
     private int callCount = 0;
     private boolean sTreeTooSmall;
+
+    private long delay = 0;
+    private double tuning = 1.0;
+
 
     private UnionArrays unionArrays;
 
@@ -91,7 +101,7 @@ public class ThreeBranchAdjuster extends Operator {
         sTree = smcTreeInput.get();
         gTrees = geneTreesInput.get();
         sTreeTooSmall = (sTree.getLeafNodeCount() < 3);
-        if (delayInput.get() != null) {
+        if (delayInput.get() != null  &&  delayInput.get() != null) {
             delay = delayInput.get().longValue();
         }
         Bindings bindings = Bindings.initialise(sTree, gTrees);
@@ -194,8 +204,23 @@ public class ThreeBranchAdjuster extends Operator {
         double minSH = Math.max(sLftHeight, sRgtHeight);
         double maxSH = sAncHeight;
         double popSF = popSFInput.get().getValue();
-        double hgtRange = Math.min(40.0 * popSF / gTrees.size(), 0.5*(maxSH - minSH));
+        if (tuningInput != null  &&  tuningInput.get() != null) {
+            tuning =  tuningInput.get().doubleValue();
+        }
+        double hgtRange = Math.min(tuning * 40.0 * popSF / gTrees.size(), 0.5*(maxSH - minSH));
+        double newHeight = sHeight + Randomizer.uniform(-hgtRange, hgtRange);
+        if (newHeight < minSH) {
+            newHeight = 2 * minSH - newHeight;
+        } else if (newHeight > maxSH) {
+            newHeight = 2 * maxSH - newHeight;
+        }
+        sNode.setHeight(newHeight);
+        logHR += setNewGNodeHeightsFromSHeight(gNodes,    sHeight, newHeight, sAncHeight);
+        logHR += setNewGNodeHeightsFromSHeight(gLftNodes, sHeight, newHeight, sLftHeight);
+        logHR += setNewGNodeHeightsFromSHeight(gRgtNodes, sHeight, newHeight, sRgtHeight);
 
+        /* non-uniform version, Jan 2016. Seems no better, perhaps worse, KISS applies. */
+        /*
         double eps = BirthDeathCollapseModel.collapseHeight();
         double gap = eps - minSH;
         if (Double.compare(collapseWeightInput.get().getValue(), 0.0) == 0  ||
@@ -234,30 +259,36 @@ public class ThreeBranchAdjuster extends Operator {
             logHR += setNewGNodeHeightsFromSHeight(gLftNodes, sHeight, newHeight, sLftHeight);
             logHR += setNewGNodeHeightsFromSHeight(gRgtNodes, sHeight, newHeight, sRgtHeight);
         }
+
+        Two functions used by this idea:
+            private double newHeightPDF(double h, double minSH, double maxSH, double delta) {
+                double d = 1.0 / (Math.log(maxSH - minSH + delta) - Math.log(delta));
+                d /=  (h - minSH + delta);
+                return d;
+            }
+
+
+            private double newHeightSample(double minSH, double maxSH, double delta) {
+                double y = Randomizer.nextDouble();
+
+                double q = minSH - delta +
+                        Math.exp(  y * (Math.log(maxSH - minSH + delta) - Math.log(delta))+ Math.log(delta)  );
+                assert q >= minSH - 1e-12;
+                assert q <= maxSH + 1e-12;
+                q = Math.max(q, minSH);
+                q = Math.min(q, maxSH);
+                return q;
+            }
+
+
+        */
         return logHR;
     }
 
 
 
 
-    private double newHeightPDF(double h, double minSH, double maxSH, double delta) {
-        double d = 1.0 / (Math.log(maxSH - minSH + delta) - Math.log(delta));
-        d /=  (h - minSH + delta);
-        return d;
-    }
 
-
-    private double newHeightSample(double minSH, double maxSH, double delta) {
-        double y = Randomizer.nextDouble();
-
-        double q = minSH - delta +
-                Math.exp(  y * (Math.log(maxSH - minSH + delta) - Math.log(delta))+ Math.log(delta)  );
-        assert q >= minSH - 1e-12;
-        assert q <= maxSH + 1e-12;
-        q = Math.max(q, minSH);
-        q = Math.min(q, maxSH);
-        return q;
-    }
 
 
     private double setNewGNodeHeightsFromSHeight(ArrayList<Node> nodes, double oldSH, double newSH, double limit) {

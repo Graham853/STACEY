@@ -136,7 +136,7 @@ public class FocusedNodeHeightScaler extends Operator {
         sTree = smcTreeInput.get();
         gTrees = geneTreesInput.get();
         sTreeTooSmall = (sTree.getLeafNodeCount() < 5);
-        if (delayInput.get() != null) {
+        if (delayInput != null  &&  delayInput.get() != null) {
             delay = delayInput.get().longValue();
         }
         Bindings bindings = Bindings.initialise(sTree, gTrees);
