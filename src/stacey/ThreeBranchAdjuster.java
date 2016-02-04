@@ -95,7 +95,7 @@ public class ThreeBranchAdjuster extends Operator {
 
 
     @Override
-    public void initAndValidate() throws Exception {
+    public void initAndValidate() {
         //super.initAndValidate(); // ??
 
         sTree = smcTreeInput.get();

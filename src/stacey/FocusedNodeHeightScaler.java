@@ -128,7 +128,7 @@ public class FocusedNodeHeightScaler extends Operator {
 
 
     @Override
-    public void initAndValidate() throws Exception {
+    public void initAndValidate() {
         /*if (smcTreeInput.get().getLeafNodeCount() < 5) {
             throw new Exception("FocusedNodeHeightScaler cannot be used if there are less than 4 minimal clusters.");
         } TODO this upsets Beauti */

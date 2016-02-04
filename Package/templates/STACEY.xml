@@ -296,14 +296,12 @@ added all stacey.*
 			
 			<!-- OPERATORS -->
 			<!-- GRJ new operators added. connect, then the hack to disconnect -->
-            <connect srcID='Tree.t:$(n)'        targetID='Reheight.t:Species'                inputName='genetree' if='Tree.t:$(n)/estimate=true'/>
             <connect srcID='Tree.t:$(n)'        targetID='StaceyNodeReheight.t:Species'      inputName='geneTree' if='Tree.t:$(n)/estimate=true'/>
             <connect srcID='Tree.t:$(n)'        targetID='NodesNudge.t:Species'              inputName='geneTree' if='Tree.t:$(n)/estimate=true'/>
             <connect srcID='Tree.t:$(n)'        targetID='FocusedNodeHeightScaler.t:Species' inputName='geneTree' if='Tree.t:$(n)/estimate=true'/>
             <connect srcID='Tree.t:$(n)'        targetID='CoordinatedPruneRegraft.t:Species' inputName='geneTree' if='Tree.t:$(n)/estimate=true'/>
             <connect srcID='Tree.t:$(n)'        targetID='ThreeBranchAdjuster.t:Species'     inputName='geneTree' if='Tree.t:$(n)/estimate=true'/>
  			<!-- Since 'Species' is treated as a separate partition, we need the following hack to get rid of undesirable Tree.t:Species connections -->
-            <connect srcID='Tree.t:Species'     targetID='Reheight.t:Species'                inputName='genetree' if='Tree.t:$(n)/estimate=XXX'/>
             <connect srcID='Tree.t:Species'     targetID='StaceyNodeReheight.t:Species'      inputName='geneTree' if='Tree.t:$(n)/estimate=XXX'/>
             <connect srcID='Tree.t:Species'     targetID='NodesNudge.t:Species'              inputName='geneTree' if='Tree.t:$(n)/estimate=XXX'/>
             <connect srcID='Tree.t:Species'     targetID='FocusedNodeHeightScaler.t:Species' inputName='geneTree' if='Tree.t:$(n)/estimate=XXX'/>
@@ -459,7 +457,7 @@ added all stacey.*
         <operator id="NodesNudge.t:Species"              spec="stacey.NodesNudge"              smcTree="@Tree.t:Species" weight="20"/>
         <operator id="FocusedNodeHeightScaler.t:Species" spec="stacey.FocusedNodeHeightScaler" smcTree="@Tree.t:Species" weight="20"/>
         <operator id="CoordinatedPruneRegraft.t:Species" spec="stacey.CoordinatedPruneRegraft" smcTree="@Tree.t:Species" weight="20"/>
-        <operator id="ThreeBranchAdjuster.t:Species"     spec="stacey.ThreeBranchAdjuster"     smcTree="@Tree.t:Species" weight="20" collapseWeight="@collapseWeight.t:Species" popSF="@popPriorScale"/>
+        <operator id="ThreeBranchAdjuster.t:Species"     spec="stacey.ThreeBranchAdjuster"     smcTree="@Tree.t:Species" weight="20" popSF="@popPriorScale"/>
 
 	    <operator id='popPriorScaleScale.t:Species' spec='ScaleOperator' scaleFactor="0.75" weight="3" parameter="@popPriorScale"/>
 

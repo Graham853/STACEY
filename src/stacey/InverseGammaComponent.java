@@ -53,15 +53,15 @@ public class InverseGammaComponent extends BEASTObject {
 
 
     @Override
-    public void initAndValidate() throws Exception {
+    public void initAndValidate() {
         if (getWeight() <= 0.0) {
-            throw new Exception("weight must be positive");
+            throw new IllegalArgumentException("weight must be positive");
         }
         if (getAlpha() <= 0.0) {
-            throw new Exception("alpha must be positive");
+            throw new IllegalArgumentException("alpha must be positive");
         }
         if (getBeta() <= 0.0) {
-            throw new Exception("beta must be positive");
+            throw new IllegalArgumentException("beta must be positive");
         }
     }
 
@@ -69,7 +69,7 @@ public class InverseGammaComponent extends BEASTObject {
     double getAlpha() { return alpha.get().getValue(); }
     double getBeta() { return beta.get().getValue(); }
 
-    void normalizeWeight(double total) throws Exception {
+    void normalizeWeight(double total) {
         Double [] normWt = new Double[1];
         normWt[0] = weight.get().getValue() / total;
         RealParameter normalizedWeight = new RealParameter(normWt);

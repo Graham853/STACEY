@@ -114,7 +114,7 @@ public class LineageRecombiner extends Operator {
 
 
     @Override
-    public void initAndValidate() throws Exception {
+    public void initAndValidate() {
         sTree = smcTreeInput.get();
         gTrees = geneTreesInput.get();
         sTreeTooSmall = (sTree.getLeafNodeCount() < 3);

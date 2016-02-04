@@ -125,7 +125,7 @@ public class CoordinatedPruneRegraft extends Operator {
 
 
     @Override
-    public void initAndValidate() throws Exception {
+    public void initAndValidate() {
         /*if (smcTreeInput.get().getLeafNodeCount() < 3) {
             throw new Exception("CoordinatedPruneRegraft cannot be used if there are less than 3 minimal clusters.");
         } TODO: this upsets Beauti */

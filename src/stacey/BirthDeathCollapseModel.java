@@ -77,7 +77,7 @@ public class BirthDeathCollapseModel extends SpeciesTreeDistribution {
         super.initAndValidate();
 
         if ((collapseHeight.get() < 1e-30) || (collapseHeight.get() > 1e10)) {
-            throw new Exception("Bad collapseHeight value");
+            throw new IllegalArgumentException("Bad collapseHeight value");
         }
         /*//TODO grjtodo. This fails if w is fixed. No lower/upper value?
         if (collapseWeight.get().lowerValueInput.get() < 0  ||
